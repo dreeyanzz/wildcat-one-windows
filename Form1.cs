@@ -23,6 +23,13 @@ namespace wildcat_one_windows
         private List<JsonElement> _gradeEnrollments = [];
         private bool _gradesPageLoaded;
 
+        // Change password page state
+        private int _cpStep = 1;
+        private string? _cpStoredOldPassword;
+        private string? _cpStoredNewPassword;
+        private DateTime? _cpOtpExpiresAt;
+        private System.Windows.Forms.Timer? _cpTimer;
+
         public Form1()
         {
             InitializeComponent();
@@ -445,7 +452,7 @@ namespace wildcat_one_windows
         private void BtnChangePassword_Click(object? sender, EventArgs e)
         {
             SetActiveSidebarButton(btnChangePassword);
-            MessageBox.Show("Coming soon!", "Change Password", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            ShowPage("changePassword");
         }
 
         private void BtnLogout_Click(object? sender, EventArgs e)
@@ -519,6 +526,7 @@ namespace wildcat_one_windows
             dashboardPanel.Visible = page == "dashboard";
             schedulePagePanel.Visible = page == "schedule";
             gradesPagePanel.Visible = page == "grades";
+            changePasswordPagePanel.Visible = page == "changePassword";
         }
 
         // ===========================================
@@ -1083,6 +1091,321 @@ namespace wildcat_one_windows
             e.CellStyle!.ForeColor = gradeColor;
             e.CellStyle.SelectionForeColor = gradeColor;
             e.CellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        }
+
+        // ===========================================
+        // Change Password Page
+        // ===========================================
+
+        private void CpShowError(string message)
+        {
+            cpSuccessPanel.Visible = false;
+            cpSuccessPanel.Size = new Size(cpSuccessPanel.Width, 0);
+            cpErrorLabel.Text = message;
+            cpErrorPanel.Size = new Size(cpErrorPanel.Width, 48);
+            cpErrorPanel.Visible = true;
+        }
+
+        private void CpShowSuccess(string message)
+        {
+            cpErrorPanel.Visible = false;
+            cpErrorPanel.Size = new Size(cpErrorPanel.Width, 0);
+            cpSuccessLabel.Text = message;
+            cpSuccessPanel.Size = new Size(cpSuccessPanel.Width, 48);
+            cpSuccessPanel.Visible = true;
+        }
+
+        private void CpHideMessages()
+        {
+            cpErrorPanel.Visible = false;
+            cpErrorPanel.Size = new Size(cpErrorPanel.Width, 0);
+            cpSuccessPanel.Visible = false;
+            cpSuccessPanel.Size = new Size(cpSuccessPanel.Width, 0);
+        }
+
+        private async void CpRequestOtp_Click(object? sender, EventArgs e)
+        {
+            CpHideMessages();
+
+            var oldPassword = cpOldPasswordTextBox.Text.Trim();
+            var newPassword = cpNewPasswordTextBox.Text.Trim();
+            var confirmPassword = cpConfirmPasswordTextBox.Text.Trim();
+
+            // Validation
+            if (string.IsNullOrEmpty(oldPassword))
+            {
+                CpShowError("Current password is required.");
+                return;
+            }
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                CpShowError("New password is required.");
+                return;
+            }
+            if (newPassword.Length < 6)
+            {
+                CpShowError("New password must be at least 6 characters.");
+                return;
+            }
+            if (newPassword == oldPassword)
+            {
+                CpShowError("New password must be different from current password.");
+                return;
+            }
+            if (string.IsNullOrEmpty(confirmPassword))
+            {
+                CpShowError("Please confirm your new password.");
+                return;
+            }
+            if (confirmPassword != newPassword)
+            {
+                CpShowError("Passwords do not match.");
+                return;
+            }
+
+            // Store passwords for step 2
+            _cpStoredOldPassword = oldPassword;
+            _cpStoredNewPassword = newPassword;
+
+            cpRequestOtpButton.Enabled = false;
+            cpRequestOtpButton.Text = "Sending OTP...";
+
+            try
+            {
+                var result = await ChangePasswordService.RequestOtpAsync(oldPassword, newPassword);
+
+                if (result.Status == 200)
+                {
+                    CpShowSuccess("OTP has been sent to your registered email.");
+                    CpSwitchToStep2();
+                }
+                else if (result.Status == 429)
+                {
+                    CpShowError("Too many requests. Please wait 5 minutes.");
+                }
+                else if (result.Status == 400)
+                {
+                    CpShowError("Invalid password.");
+                }
+                else if (result.Status == 401)
+                {
+                    CpShowError("Current password is incorrect.");
+                }
+                else
+                {
+                    var msg = "An error occurred. Please try again.";
+                    if (result.Data.ValueKind == JsonValueKind.Object && result.Data.TryGetProperty("message", out var msgProp))
+                        msg = msgProp.GetString() ?? msg;
+                    CpShowError(msg);
+                }
+            }
+            catch (Exception ex)
+            {
+                CpShowError(ex.Message);
+            }
+            finally
+            {
+                cpRequestOtpButton.Enabled = true;
+                cpRequestOtpButton.Text = "Request OTP";
+            }
+        }
+
+        private void CpSwitchToStep2()
+        {
+            _cpStep = 2;
+            cpStep1Panel.Visible = false;
+            cpStep2Panel.Visible = true;
+            cpOtpTextBox.Text = "";
+            cpOtpTextBox.Enabled = true;
+            cpSubmitButton.Enabled = true;
+
+            // Start 5-minute timer
+            _cpOtpExpiresAt = DateTime.Now.AddMinutes(5);
+            _cpTimer?.Stop();
+            _cpTimer?.Dispose();
+            _cpTimer = new System.Windows.Forms.Timer { Interval = 1000 };
+            _cpTimer.Tick += CpTimer_Tick;
+            _cpTimer.Start();
+            CpTimer_Tick(null, EventArgs.Empty); // Update immediately
+        }
+
+        private void CpTimer_Tick(object? sender, EventArgs e)
+        {
+            if (_cpOtpExpiresAt is not DateTime expiresAt)
+            {
+                _cpTimer?.Stop();
+                return;
+            }
+
+            var remaining = expiresAt - DateTime.Now;
+
+            if (remaining.TotalSeconds <= 0)
+            {
+                cpOtpTimerLabel.Text = "OTP expired";
+                cpOtpTimerLabel.ForeColor = Color.FromArgb(231, 76, 60);
+                cpOtpTextBox.Enabled = false;
+                cpSubmitButton.Enabled = false;
+                _cpTimer?.Stop();
+                return;
+            }
+
+            var minutes = (int)remaining.TotalMinutes;
+            var seconds = remaining.Seconds;
+            cpOtpTimerLabel.Text = $"OTP expires in {minutes}:{seconds:D2}";
+
+            if (remaining.TotalSeconds < 60)
+                cpOtpTimerLabel.ForeColor = Color.FromArgb(231, 76, 60);
+            else
+                cpOtpTimerLabel.ForeColor = _maroon;
+        }
+
+        private async void CpSubmitPasswordChange_Click(object? sender, EventArgs e)
+        {
+            CpHideMessages();
+
+            var otp = cpOtpTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(otp))
+            {
+                CpShowError("OTP is required.");
+                return;
+            }
+            if (!Regex.IsMatch(otp, @"^\d{6}$"))
+            {
+                CpShowError("OTP must be exactly 6 digits.");
+                return;
+            }
+            if (_cpStoredOldPassword is null || _cpStoredNewPassword is null)
+            {
+                CpShowError("Session expired. Please start over.");
+                return;
+            }
+
+            cpSubmitButton.Enabled = false;
+            cpSubmitButton.Text = "Changing Password...";
+
+            try
+            {
+                var result = await ChangePasswordService.SubmitPasswordChangeAsync(otp, _cpStoredOldPassword, _cpStoredNewPassword);
+
+                if (result.Status == 200)
+                {
+                    CpShowSuccess("Password changed successfully!");
+                    _cpTimer?.Stop();
+
+                    await Task.Delay(2000);
+
+                    if (!IsDisposed)
+                        CpResetForm();
+                }
+                else
+                {
+                    var msg = "Failed to change password. Please try again.";
+                    if (result.Data.ValueKind == JsonValueKind.Object && result.Data.TryGetProperty("message", out var msgProp))
+                        msg = msgProp.GetString() ?? msg;
+                    CpShowError(msg);
+                }
+            }
+            catch (Exception ex)
+            {
+                CpShowError(ex.Message);
+            }
+            finally
+            {
+                if (!IsDisposed)
+                {
+                    cpSubmitButton.Enabled = true;
+                    cpSubmitButton.Text = "Change Password";
+                }
+            }
+        }
+
+        private void CpStartOver_Click(object? sender, EventArgs e)
+        {
+            CpResetForm();
+        }
+
+        private void CpResetForm()
+        {
+            _cpStep = 1;
+            _cpStoredOldPassword = null;
+            _cpStoredNewPassword = null;
+            _cpOtpExpiresAt = null;
+            _cpTimer?.Stop();
+
+            cpOldPasswordTextBox.Text = "";
+            cpNewPasswordTextBox.Text = "";
+            cpConfirmPasswordTextBox.Text = "";
+            cpOtpTextBox.Text = "";
+
+            cpOldPasswordTextBox.UseSystemPasswordChar = true;
+            cpNewPasswordTextBox.UseSystemPasswordChar = true;
+            cpConfirmPasswordTextBox.UseSystemPasswordChar = true;
+            cpToggleOldPassword.Text = "SHOW";
+            cpToggleNewPassword.Text = "SHOW";
+            cpToggleConfirmPassword.Text = "SHOW";
+
+            CpHideMessages();
+
+            cpStep1Panel.Visible = true;
+            cpStep2Panel.Visible = false;
+
+            cpOtpTextBox.Enabled = true;
+            cpSubmitButton.Enabled = true;
+            cpSubmitButton.Text = "Change Password";
+            cpRequestOtpButton.Enabled = true;
+            cpRequestOtpButton.Text = "Request OTP";
+        }
+
+        private void CpToggleOldPassword_Click(object? sender, EventArgs e)
+        {
+            cpOldPasswordTextBox.UseSystemPasswordChar = !cpOldPasswordTextBox.UseSystemPasswordChar;
+            cpToggleOldPassword.Text = cpOldPasswordTextBox.UseSystemPasswordChar ? "SHOW" : "HIDE";
+        }
+
+        private void CpToggleNewPassword_Click(object? sender, EventArgs e)
+        {
+            cpNewPasswordTextBox.UseSystemPasswordChar = !cpNewPasswordTextBox.UseSystemPasswordChar;
+            cpToggleNewPassword.Text = cpNewPasswordTextBox.UseSystemPasswordChar ? "SHOW" : "HIDE";
+        }
+
+        private void CpToggleConfirmPassword_Click(object? sender, EventArgs e)
+        {
+            cpConfirmPasswordTextBox.UseSystemPasswordChar = !cpConfirmPasswordTextBox.UseSystemPasswordChar;
+            cpToggleConfirmPassword.Text = cpConfirmPasswordTextBox.UseSystemPasswordChar ? "SHOW" : "HIDE";
+        }
+
+        private void CpOtpTextBox_KeyPress(object? sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private void CpOtpTextBox_TextChanged(object? sender, EventArgs e)
+        {
+            var text = cpOtpTextBox.Text;
+            var digitsOnly = new string(text.Where(char.IsDigit).ToArray());
+            if (digitsOnly.Length > 6)
+                digitsOnly = digitsOnly[..6];
+            if (text != digitsOnly)
+            {
+                cpOtpTextBox.Text = digitsOnly;
+                cpOtpTextBox.SelectionStart = digitsOnly.Length;
+            }
+        }
+
+        private void CpErrorPanel_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel) return;
+            using var brush = new SolidBrush(Color.FromArgb(231, 76, 60));
+            e.Graphics.FillRectangle(brush, 0, 0, 4, panel.Height);
+        }
+
+        private void CpSuccessPanel_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel) return;
+            using var brush = new SolidBrush(Color.FromArgb(39, 174, 96));
+            e.Graphics.FillRectangle(brush, 0, 0, 4, panel.Height);
         }
 
         // ===========================================

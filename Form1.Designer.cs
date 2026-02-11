@@ -504,10 +504,278 @@ namespace wildcat_one_windows
             gradesPagePanel.Controls.Add(gradesTableContainer);
             gradesPagePanel.Controls.Add(gradesEmptyLabel);
 
+            // ===========================================
+            // Change Password Page Panel
+            // ===========================================
+            var inputBg = Color.FromArgb(248, 249, 251);
+            var labelColor = Color.FromArgb(52, 73, 94);
+
+            changePasswordPagePanel = new Panel();
+            changePasswordPagePanel.Location = new Point(0, 0);
+            changePasswordPagePanel.Size = new Size(contentWidth, contentHeight);
+            changePasswordPagePanel.BackColor = contentBg;
+            changePasswordPagePanel.Visible = false;
+            changePasswordPagePanel.AutoScroll = true;
+
+            // --- Form Card (centered, white bg, ~420px wide) ---
+            cpFormCard = new Panel();
+            cpFormCard.Size = new Size(420, 560);
+            cpFormCard.Location = new Point((contentWidth - 420) / 2, 30);
+            cpFormCard.BackColor = Color.White;
+            cpFormCard.Padding = new Padding(30);
+
+            // --- Title ---
+            cpTitle = new Label();
+            cpTitle.Text = "Change Password";
+            cpTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            cpTitle.ForeColor = maroon;
+            cpTitle.Location = new Point(30, 20);
+            cpTitle.AutoSize = true;
+
+            // --- Error Panel ---
+            cpErrorPanel = new Panel();
+            cpErrorPanel.Location = new Point(30, 56);
+            cpErrorPanel.Size = new Size(360, 0);
+            cpErrorPanel.BackColor = Color.FromArgb(255, 238, 238);
+            cpErrorPanel.Visible = false;
+            cpErrorPanel.Paint += CpErrorPanel_Paint;
+
+            cpErrorLabel = new Label();
+            cpErrorLabel.Text = "";
+            cpErrorLabel.Font = new Font("Segoe UI", 9F);
+            cpErrorLabel.ForeColor = Color.FromArgb(231, 76, 60);
+            cpErrorLabel.Location = new Point(14, 8);
+            cpErrorLabel.Size = new Size(332, 32);
+            cpErrorLabel.AutoSize = false;
+            cpErrorPanel.Controls.Add(cpErrorLabel);
+
+            // --- Success Panel ---
+            cpSuccessPanel = new Panel();
+            cpSuccessPanel.Location = new Point(30, 56);
+            cpSuccessPanel.Size = new Size(360, 0);
+            cpSuccessPanel.BackColor = Color.FromArgb(239, 255, 239);
+            cpSuccessPanel.Visible = false;
+            cpSuccessPanel.Paint += CpSuccessPanel_Paint;
+
+            cpSuccessLabel = new Label();
+            cpSuccessLabel.Text = "";
+            cpSuccessLabel.Font = new Font("Segoe UI", 9F);
+            cpSuccessLabel.ForeColor = Color.FromArgb(39, 174, 96);
+            cpSuccessLabel.Location = new Point(14, 8);
+            cpSuccessLabel.Size = new Size(332, 32);
+            cpSuccessLabel.AutoSize = false;
+            cpSuccessPanel.Controls.Add(cpSuccessLabel);
+
+            // --- Step 1 Panel ---
+            cpStep1Panel = new Panel();
+            cpStep1Panel.Location = new Point(30, 66);
+            cpStep1Panel.Size = new Size(360, 380);
+            cpStep1Panel.BackColor = Color.White;
+
+            // Old Password
+            cpOldPasswordLabel = new Label();
+            cpOldPasswordLabel.Text = "Current Password";
+            cpOldPasswordLabel.Font = new Font("Segoe UI", 10F);
+            cpOldPasswordLabel.ForeColor = labelColor;
+            cpOldPasswordLabel.Location = new Point(0, 10);
+            cpOldPasswordLabel.AutoSize = true;
+
+            cpOldPasswordTextBox = new TextBox();
+            cpOldPasswordTextBox.Location = new Point(0, 34);
+            cpOldPasswordTextBox.Size = new Size(360, 35);
+            cpOldPasswordTextBox.Font = new Font("Segoe UI", 11F);
+            cpOldPasswordTextBox.BackColor = inputBg;
+            cpOldPasswordTextBox.BorderStyle = BorderStyle.FixedSingle;
+            cpOldPasswordTextBox.UseSystemPasswordChar = true;
+            cpOldPasswordTextBox.PlaceholderText = "Enter current password";
+
+            cpToggleOldPassword = new Button();
+            cpToggleOldPassword.Text = "SHOW";
+            cpToggleOldPassword.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            cpToggleOldPassword.ForeColor = Color.FromArgb(127, 140, 141);
+            cpToggleOldPassword.FlatStyle = FlatStyle.Flat;
+            cpToggleOldPassword.FlatAppearance.BorderSize = 0;
+            cpToggleOldPassword.BackColor = inputBg;
+            cpToggleOldPassword.Size = new Size(50, 28);
+            cpToggleOldPassword.Location = new Point(306, 38);
+            cpToggleOldPassword.Cursor = Cursors.Hand;
+            cpToggleOldPassword.Click += CpToggleOldPassword_Click;
+
+            // New Password
+            cpNewPasswordLabel = new Label();
+            cpNewPasswordLabel.Text = "New Password";
+            cpNewPasswordLabel.Font = new Font("Segoe UI", 10F);
+            cpNewPasswordLabel.ForeColor = labelColor;
+            cpNewPasswordLabel.Location = new Point(0, 80);
+            cpNewPasswordLabel.AutoSize = true;
+
+            cpNewPasswordTextBox = new TextBox();
+            cpNewPasswordTextBox.Location = new Point(0, 104);
+            cpNewPasswordTextBox.Size = new Size(360, 35);
+            cpNewPasswordTextBox.Font = new Font("Segoe UI", 11F);
+            cpNewPasswordTextBox.BackColor = inputBg;
+            cpNewPasswordTextBox.BorderStyle = BorderStyle.FixedSingle;
+            cpNewPasswordTextBox.UseSystemPasswordChar = true;
+            cpNewPasswordTextBox.PlaceholderText = "Enter new password";
+
+            cpToggleNewPassword = new Button();
+            cpToggleNewPassword.Text = "SHOW";
+            cpToggleNewPassword.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            cpToggleNewPassword.ForeColor = Color.FromArgb(127, 140, 141);
+            cpToggleNewPassword.FlatStyle = FlatStyle.Flat;
+            cpToggleNewPassword.FlatAppearance.BorderSize = 0;
+            cpToggleNewPassword.BackColor = inputBg;
+            cpToggleNewPassword.Size = new Size(50, 28);
+            cpToggleNewPassword.Location = new Point(306, 108);
+            cpToggleNewPassword.Cursor = Cursors.Hand;
+            cpToggleNewPassword.Click += CpToggleNewPassword_Click;
+
+            // Confirm Password
+            cpConfirmPasswordLabel = new Label();
+            cpConfirmPasswordLabel.Text = "Confirm New Password";
+            cpConfirmPasswordLabel.Font = new Font("Segoe UI", 10F);
+            cpConfirmPasswordLabel.ForeColor = labelColor;
+            cpConfirmPasswordLabel.Location = new Point(0, 150);
+            cpConfirmPasswordLabel.AutoSize = true;
+
+            cpConfirmPasswordTextBox = new TextBox();
+            cpConfirmPasswordTextBox.Location = new Point(0, 174);
+            cpConfirmPasswordTextBox.Size = new Size(360, 35);
+            cpConfirmPasswordTextBox.Font = new Font("Segoe UI", 11F);
+            cpConfirmPasswordTextBox.BackColor = inputBg;
+            cpConfirmPasswordTextBox.BorderStyle = BorderStyle.FixedSingle;
+            cpConfirmPasswordTextBox.UseSystemPasswordChar = true;
+            cpConfirmPasswordTextBox.PlaceholderText = "Confirm new password";
+
+            cpToggleConfirmPassword = new Button();
+            cpToggleConfirmPassword.Text = "SHOW";
+            cpToggleConfirmPassword.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            cpToggleConfirmPassword.ForeColor = Color.FromArgb(127, 140, 141);
+            cpToggleConfirmPassword.FlatStyle = FlatStyle.Flat;
+            cpToggleConfirmPassword.FlatAppearance.BorderSize = 0;
+            cpToggleConfirmPassword.BackColor = inputBg;
+            cpToggleConfirmPassword.Size = new Size(50, 28);
+            cpToggleConfirmPassword.Location = new Point(306, 178);
+            cpToggleConfirmPassword.Cursor = Cursors.Hand;
+            cpToggleConfirmPassword.Click += CpToggleConfirmPassword_Click;
+
+            // Request OTP Button
+            cpRequestOtpButton = new Button();
+            cpRequestOtpButton.Text = "Request OTP";
+            cpRequestOtpButton.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            cpRequestOtpButton.ForeColor = Color.White;
+            cpRequestOtpButton.BackColor = maroon;
+            cpRequestOtpButton.FlatStyle = FlatStyle.Flat;
+            cpRequestOtpButton.FlatAppearance.BorderSize = 0;
+            cpRequestOtpButton.Size = new Size(360, 44);
+            cpRequestOtpButton.Location = new Point(0, 230);
+            cpRequestOtpButton.Cursor = Cursors.Hand;
+            cpRequestOtpButton.Click += CpRequestOtp_Click;
+
+            cpStep1Panel.Controls.Add(cpOldPasswordLabel);
+            cpStep1Panel.Controls.Add(cpOldPasswordTextBox);
+            cpStep1Panel.Controls.Add(cpToggleOldPassword);
+            cpStep1Panel.Controls.Add(cpNewPasswordLabel);
+            cpStep1Panel.Controls.Add(cpNewPasswordTextBox);
+            cpStep1Panel.Controls.Add(cpToggleNewPassword);
+            cpStep1Panel.Controls.Add(cpConfirmPasswordLabel);
+            cpStep1Panel.Controls.Add(cpConfirmPasswordTextBox);
+            cpStep1Panel.Controls.Add(cpToggleConfirmPassword);
+            cpStep1Panel.Controls.Add(cpRequestOtpButton);
+
+            // --- Step 2 Panel ---
+            cpStep2Panel = new Panel();
+            cpStep2Panel.Location = new Point(30, 66);
+            cpStep2Panel.Size = new Size(360, 340);
+            cpStep2Panel.BackColor = Color.White;
+            cpStep2Panel.Visible = false;
+
+            // OTP Info Label
+            cpOtpInfoLabel = new Label();
+            cpOtpInfoLabel.Text = "A 6-digit OTP has been sent to your registered email.";
+            cpOtpInfoLabel.Font = new Font("Segoe UI", 9.5F);
+            cpOtpInfoLabel.ForeColor = Color.FromArgb(100, 100, 100);
+            cpOtpInfoLabel.Location = new Point(0, 10);
+            cpOtpInfoLabel.Size = new Size(360, 40);
+            cpOtpInfoLabel.AutoSize = false;
+
+            // OTP Timer Label
+            cpOtpTimerLabel = new Label();
+            cpOtpTimerLabel.Text = "OTP expires in 5:00";
+            cpOtpTimerLabel.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            cpOtpTimerLabel.ForeColor = maroon;
+            cpOtpTimerLabel.Location = new Point(0, 50);
+            cpOtpTimerLabel.AutoSize = true;
+
+            // OTP Label
+            cpOtpLabel = new Label();
+            cpOtpLabel.Text = "Enter OTP";
+            cpOtpLabel.Font = new Font("Segoe UI", 10F);
+            cpOtpLabel.ForeColor = labelColor;
+            cpOtpLabel.Location = new Point(0, 82);
+            cpOtpLabel.AutoSize = true;
+
+            // OTP TextBox
+            cpOtpTextBox = new TextBox();
+            cpOtpTextBox.Location = new Point(0, 106);
+            cpOtpTextBox.Size = new Size(360, 35);
+            cpOtpTextBox.Font = new Font("Segoe UI", 14F);
+            cpOtpTextBox.BackColor = inputBg;
+            cpOtpTextBox.BorderStyle = BorderStyle.FixedSingle;
+            cpOtpTextBox.MaxLength = 6;
+            cpOtpTextBox.PlaceholderText = "000000";
+            cpOtpTextBox.TextAlign = HorizontalAlignment.Center;
+            cpOtpTextBox.KeyPress += CpOtpTextBox_KeyPress;
+            cpOtpTextBox.TextChanged += CpOtpTextBox_TextChanged;
+
+            // Submit Button
+            cpSubmitButton = new Button();
+            cpSubmitButton.Text = "Change Password";
+            cpSubmitButton.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            cpSubmitButton.ForeColor = Color.White;
+            cpSubmitButton.BackColor = maroon;
+            cpSubmitButton.FlatStyle = FlatStyle.Flat;
+            cpSubmitButton.FlatAppearance.BorderSize = 0;
+            cpSubmitButton.Size = new Size(360, 44);
+            cpSubmitButton.Location = new Point(0, 162);
+            cpSubmitButton.Cursor = Cursors.Hand;
+            cpSubmitButton.Click += CpSubmitPasswordChange_Click;
+
+            // Start Over Button
+            cpStartOverButton = new Button();
+            cpStartOverButton.Text = "Start Over";
+            cpStartOverButton.Font = new Font("Segoe UI", 10F);
+            cpStartOverButton.ForeColor = Color.FromArgb(127, 140, 141);
+            cpStartOverButton.BackColor = Color.White;
+            cpStartOverButton.FlatStyle = FlatStyle.Flat;
+            cpStartOverButton.FlatAppearance.BorderSize = 1;
+            cpStartOverButton.FlatAppearance.BorderColor = Color.FromArgb(200, 200, 200);
+            cpStartOverButton.Size = new Size(360, 40);
+            cpStartOverButton.Location = new Point(0, 216);
+            cpStartOverButton.Cursor = Cursors.Hand;
+            cpStartOverButton.Click += CpStartOver_Click;
+
+            cpStep2Panel.Controls.Add(cpOtpInfoLabel);
+            cpStep2Panel.Controls.Add(cpOtpTimerLabel);
+            cpStep2Panel.Controls.Add(cpOtpLabel);
+            cpStep2Panel.Controls.Add(cpOtpTextBox);
+            cpStep2Panel.Controls.Add(cpSubmitButton);
+            cpStep2Panel.Controls.Add(cpStartOverButton);
+
+            // Add controls to form card
+            cpFormCard.Controls.Add(cpTitle);
+            cpFormCard.Controls.Add(cpErrorPanel);
+            cpFormCard.Controls.Add(cpSuccessPanel);
+            cpFormCard.Controls.Add(cpStep1Panel);
+            cpFormCard.Controls.Add(cpStep2Panel);
+
+            changePasswordPagePanel.Controls.Add(cpFormCard);
+
             // Add all page panels to content panel
             contentPanel.Controls.Add(dashboardPanel);
             contentPanel.Controls.Add(schedulePagePanel);
             contentPanel.Controls.Add(gradesPagePanel);
+            contentPanel.Controls.Add(changePasswordPagePanel);
 
             // ===========================================
             // Add all to form
@@ -640,5 +908,32 @@ namespace wildcat_one_windows
         private Panel gradesTableContainer;
         private DataGridView gradesDataGridView;
         private Label gradesEmptyLabel;
+
+        // Change Password page
+        private Panel changePasswordPagePanel;
+        private Panel cpFormCard;
+        private Label cpTitle;
+        private Panel cpErrorPanel;
+        private Label cpErrorLabel;
+        private Panel cpSuccessPanel;
+        private Label cpSuccessLabel;
+        private Panel cpStep1Panel;
+        private Label cpOldPasswordLabel;
+        private TextBox cpOldPasswordTextBox;
+        private Button cpToggleOldPassword;
+        private Label cpNewPasswordLabel;
+        private TextBox cpNewPasswordTextBox;
+        private Button cpToggleNewPassword;
+        private Label cpConfirmPasswordLabel;
+        private TextBox cpConfirmPasswordTextBox;
+        private Button cpToggleConfirmPassword;
+        private Button cpRequestOtpButton;
+        private Panel cpStep2Panel;
+        private Label cpOtpInfoLabel;
+        private Label cpOtpTimerLabel;
+        private Label cpOtpLabel;
+        private TextBox cpOtpTextBox;
+        private Button cpSubmitButton;
+        private Button cpStartOverButton;
     }
 }
