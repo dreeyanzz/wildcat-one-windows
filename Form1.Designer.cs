@@ -343,9 +343,171 @@ namespace wildcat_one_windows
             schedulePagePanel.Controls.Add(scheduleHeaderPanel);
             schedulePagePanel.Controls.Add(scheduleGridContainer);
 
-            // Add both page panels to content panel
+            // ===========================================
+            // Grades Page Panel
+            // ===========================================
+            gradesPagePanel = new Panel();
+            gradesPagePanel.Location = new Point(0, 0);
+            gradesPagePanel.Size = new Size(contentWidth, contentHeight);
+            gradesPagePanel.BackColor = contentBg;
+            gradesPagePanel.Visible = false;
+
+            // --- Grades Header Panel ---
+            gradesHeaderPanel = new Panel();
+            gradesHeaderPanel.Location = new Point(20, 12);
+            gradesHeaderPanel.Size = new Size(840, 70);
+            gradesHeaderPanel.BackColor = Color.White;
+
+            gradesTitle = new Label();
+            gradesTitle.Text = "Academic Grades";
+            gradesTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            gradesTitle.ForeColor = Color.FromArgb(122, 26, 61);
+            gradesTitle.Location = new Point(18, 8);
+            gradesTitle.AutoSize = true;
+
+            gradesSemesterComboBox = new ComboBox();
+            gradesSemesterComboBox.Font = new Font("Segoe UI", 9.5F);
+            gradesSemesterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            gradesSemesterComboBox.Location = new Point(540, 12);
+            gradesSemesterComboBox.Size = new Size(280, 26);
+
+            gradesSemesterInfoLabel = new Label();
+            gradesSemesterInfoLabel.Text = "";
+            gradesSemesterInfoLabel.Font = new Font("Segoe UI", 9F);
+            gradesSemesterInfoLabel.ForeColor = Color.FromArgb(100, 100, 100);
+            gradesSemesterInfoLabel.Location = new Point(18, 44);
+            gradesSemesterInfoLabel.AutoSize = true;
+
+            gradesHeaderPanel.Controls.Add(gradesTitle);
+            gradesHeaderPanel.Controls.Add(gradesSemesterComboBox);
+            gradesHeaderPanel.Controls.Add(gradesSemesterInfoLabel);
+
+            // --- Grades Table Container (scrollable) ---
+            gradesTableContainer = new Panel();
+            gradesTableContainer.Location = new Point(20, 92);
+            gradesTableContainer.Size = new Size(840, contentHeight - 112);
+            gradesTableContainer.AutoScroll = true;
+            gradesTableContainer.BackColor = Color.White;
+
+            // --- Grades DataGridView ---
+            gradesDataGridView = new DataGridView();
+            gradesDataGridView.Dock = DockStyle.Fill;
+            gradesDataGridView.ReadOnly = true;
+            gradesDataGridView.AllowUserToAddRows = false;
+            gradesDataGridView.AllowUserToDeleteRows = false;
+            gradesDataGridView.AllowUserToResizeRows = false;
+            gradesDataGridView.RowHeadersVisible = false;
+            gradesDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            gradesDataGridView.MultiSelect = false;
+            gradesDataGridView.BorderStyle = BorderStyle.None;
+            gradesDataGridView.BackgroundColor = Color.White;
+            gradesDataGridView.GridColor = Color.FromArgb(230, 230, 230);
+            gradesDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            gradesDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            gradesDataGridView.RowTemplate.Height = 50;
+            gradesDataGridView.Font = new Font("Segoe UI", 9F);
+
+            // Header styling
+            gradesDataGridView.EnableHeadersVisualStyles = false;
+            gradesDataGridView.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(248, 249, 250),
+                ForeColor = Color.FromArgb(122, 26, 61),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                Padding = new Padding(8, 0, 0, 0),
+                SelectionBackColor = Color.FromArgb(248, 249, 250),
+                SelectionForeColor = Color.FromArgb(122, 26, 61)
+            };
+            gradesDataGridView.ColumnHeadersHeight = 40;
+            gradesDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            gradesDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+            // Row styling
+            gradesDataGridView.DefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.White,
+                ForeColor = Color.FromArgb(52, 73, 94),
+                SelectionBackColor = Color.FromArgb(240, 242, 245),
+                SelectionForeColor = Color.FromArgb(52, 73, 94),
+                Padding = new Padding(8, 0, 0, 0),
+                WrapMode = DataGridViewTriState.True
+            };
+            gradesDataGridView.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(250, 250, 252),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                SelectionBackColor = Color.FromArgb(240, 242, 245),
+                SelectionForeColor = Color.FromArgb(52, 73, 94),
+                Padding = new Padding(8, 0, 0, 0),
+                WrapMode = DataGridViewTriState.True
+            };
+
+            // Columns
+            var colCourseCode = new DataGridViewTextBoxColumn
+            {
+                Name = "CourseCode",
+                HeaderText = "Course Code",
+                Width = 100
+            };
+            var colCourseTitle = new DataGridViewTextBoxColumn
+            {
+                Name = "CourseTitle",
+                HeaderText = "Course Title",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            };
+            var colUnits = new DataGridViewTextBoxColumn
+            {
+                Name = "Units",
+                HeaderText = "Units",
+                Width = 60,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            };
+            var colMidterm = new DataGridViewTextBoxColumn
+            {
+                Name = "Midterm",
+                HeaderText = "Midterm",
+                Width = 80,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            };
+            var colFinal = new DataGridViewTextBoxColumn
+            {
+                Name = "Final",
+                HeaderText = "Final",
+                Width = 80,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            };
+            var colStatus = new DataGridViewTextBoxColumn
+            {
+                Name = "Status",
+                HeaderText = "Status",
+                Width = 100,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            };
+
+            gradesDataGridView.Columns.AddRange(colCourseCode, colCourseTitle, colUnits, colMidterm, colFinal, colStatus);
+
+            gradesTableContainer.Controls.Add(gradesDataGridView);
+
+            // --- Grades empty state label (hidden by default) ---
+            gradesEmptyLabel = new Label();
+            gradesEmptyLabel.Text = "No grades available";
+            gradesEmptyLabel.Font = new Font("Segoe UI", 11F, FontStyle.Italic);
+            gradesEmptyLabel.ForeColor = Color.FromArgb(150, 150, 150);
+            gradesEmptyLabel.AutoSize = false;
+            gradesEmptyLabel.Size = new Size(840, 40);
+            gradesEmptyLabel.Location = new Point(20, 200);
+            gradesEmptyLabel.TextAlign = ContentAlignment.MiddleCenter;
+            gradesEmptyLabel.Visible = false;
+
+            gradesPagePanel.Controls.Add(gradesHeaderPanel);
+            gradesPagePanel.Controls.Add(gradesTableContainer);
+            gradesPagePanel.Controls.Add(gradesEmptyLabel);
+
+            // Add all page panels to content panel
             contentPanel.Controls.Add(dashboardPanel);
             contentPanel.Controls.Add(schedulePagePanel);
+            contentPanel.Controls.Add(gradesPagePanel);
 
             // ===========================================
             // Add all to form
@@ -468,5 +630,15 @@ namespace wildcat_one_windows
         private Label semesterInfoLabel;
         private Panel scheduleGridContainer;
         private DoubleBufferedPanel scheduleGridPanel;
+
+        // Grades page
+        private Panel gradesPagePanel;
+        private Panel gradesHeaderPanel;
+        private Label gradesTitle;
+        private ComboBox gradesSemesterComboBox;
+        private Label gradesSemesterInfoLabel;
+        private Panel gradesTableContainer;
+        private DataGridView gradesDataGridView;
+        private Label gradesEmptyLabel;
     }
 }
