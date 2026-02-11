@@ -11,7 +11,11 @@
       "Bash(gh auth status:*)",
       "Bash(git init:*)",
       "Bash(git status:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: implement login page with CIT-U API integration\n\nMigrate login functionality from React student-portal to WinForms.\nIncludes AES-256-CBC encryption, HMAC-SHA256 signing, and maroon\nCIT-U themed UI with centered branding, password toggle, and\nerror handling.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(gh repo create:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

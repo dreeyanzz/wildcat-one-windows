@@ -771,11 +771,263 @@ namespace wildcat_one_windows
 
             changePasswordPagePanel.Controls.Add(cpFormCard);
 
+            // ===========================================
+            // Course Offerings Page Panel
+            // ===========================================
+            courseOfferingsPagePanel = new Panel();
+            courseOfferingsPagePanel.Location = new Point(0, 0);
+            courseOfferingsPagePanel.Size = new Size(contentWidth, contentHeight);
+            courseOfferingsPagePanel.BackColor = contentBg;
+            courseOfferingsPagePanel.Visible = false;
+            courseOfferingsPagePanel.AutoScroll = true;
+
+            // --- Course Offerings Header Panel ---
+            coHeaderPanel = new Panel();
+            coHeaderPanel.Location = new Point(20, 12);
+            coHeaderPanel.Size = new Size(840, 70);
+            coHeaderPanel.BackColor = Color.White;
+
+            coTitle = new Label();
+            coTitle.Text = "Course Offerings";
+            coTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            coTitle.ForeColor = Color.FromArgb(122, 26, 61);
+            coTitle.Location = new Point(18, 18);
+            coTitle.AutoSize = true;
+
+            coHeaderPanel.Controls.Add(coTitle);
+
+            // --- Course Offerings Search Panel ---
+            coSearchPanel = new Panel();
+            coSearchPanel.Location = new Point(20, 92);
+            coSearchPanel.Size = new Size(840, 70);
+            coSearchPanel.BackColor = Color.White;
+
+            coSearchLabel = new Label();
+            coSearchLabel.Text = "Search Course:";
+            coSearchLabel.Font = new Font("Segoe UI", 10F);
+            coSearchLabel.ForeColor = Color.FromArgb(52, 73, 94);
+            coSearchLabel.Location = new Point(18, 8);
+            coSearchLabel.AutoSize = true;
+
+            coSearchTextBox = new TextBox();
+            coSearchTextBox.Location = new Point(18, 32);
+            coSearchTextBox.Size = new Size(500, 28);
+            coSearchTextBox.Font = new Font("Segoe UI", 10F);
+            coSearchTextBox.BackColor = inputBg;
+            coSearchTextBox.BorderStyle = BorderStyle.FixedSingle;
+            coSearchTextBox.PlaceholderText = "Type course code or name...";
+
+            coSearchButton = new Button();
+            coSearchButton.Text = "Search";
+            coSearchButton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            coSearchButton.ForeColor = Color.White;
+            coSearchButton.BackColor = maroon;
+            coSearchButton.FlatStyle = FlatStyle.Flat;
+            coSearchButton.FlatAppearance.BorderSize = 0;
+            coSearchButton.Size = new Size(90, 30);
+            coSearchButton.Location = new Point(528, 31);
+            coSearchButton.Cursor = Cursors.Hand;
+
+            coSearchPanel.Controls.Add(coSearchLabel);
+            coSearchPanel.Controls.Add(coSearchTextBox);
+            coSearchPanel.Controls.Add(coSearchButton);
+
+            // --- Course Offerings Dropdown ListBox (autocomplete) ---
+            coDropdownListBox = new ListBox();
+            coDropdownListBox.Location = new Point(38, 162);
+            coDropdownListBox.Size = new Size(500, 0);
+            coDropdownListBox.Font = new Font("Segoe UI", 9.5F);
+            coDropdownListBox.BorderStyle = BorderStyle.FixedSingle;
+            coDropdownListBox.Visible = false;
+
+            // --- Loading Label ---
+            coLoadingLabel = new Label();
+            coLoadingLabel.Text = "Loading courses...";
+            coLoadingLabel.Font = new Font("Segoe UI", 11F, FontStyle.Italic);
+            coLoadingLabel.ForeColor = Color.FromArgb(150, 150, 150);
+            coLoadingLabel.AutoSize = false;
+            coLoadingLabel.Size = new Size(840, 40);
+            coLoadingLabel.Location = new Point(20, 200);
+            coLoadingLabel.TextAlign = ContentAlignment.MiddleCenter;
+            coLoadingLabel.Visible = false;
+
+            // --- Error Label ---
+            coErrorLabel = new Label();
+            coErrorLabel.Text = "";
+            coErrorLabel.Font = new Font("Segoe UI", 10F);
+            coErrorLabel.ForeColor = Color.FromArgb(231, 76, 60);
+            coErrorLabel.AutoSize = false;
+            coErrorLabel.Size = new Size(840, 40);
+            coErrorLabel.Location = new Point(20, 200);
+            coErrorLabel.TextAlign = ContentAlignment.MiddleCenter;
+            coErrorLabel.Visible = false;
+
+            // --- Info Panel (shows selected course info) ---
+            coInfoPanel = new Panel();
+            coInfoPanel.Location = new Point(20, 172);
+            coInfoPanel.Size = new Size(840, 40);
+            coInfoPanel.BackColor = Color.White;
+            coInfoPanel.Visible = false;
+
+            coInfoLabel = new Label();
+            coInfoLabel.Text = "";
+            coInfoLabel.Font = new Font("Segoe UI", 10F);
+            coInfoLabel.ForeColor = Color.FromArgb(52, 73, 94);
+            coInfoLabel.Location = new Point(18, 10);
+            coInfoLabel.AutoSize = true;
+
+            coInfoPanel.Controls.Add(coInfoLabel);
+
+            // --- Table Container ---
+            coTableContainer = new Panel();
+            coTableContainer.Location = new Point(20, 222);
+            coTableContainer.Size = new Size(840, contentHeight - 242);
+            coTableContainer.AutoScroll = true;
+            coTableContainer.BackColor = Color.White;
+            coTableContainer.Visible = false;
+
+            // --- DataGridView ---
+            coDataGridView = new DataGridView();
+            coDataGridView.Dock = DockStyle.Fill;
+            coDataGridView.ReadOnly = true;
+            coDataGridView.AllowUserToAddRows = false;
+            coDataGridView.AllowUserToDeleteRows = false;
+            coDataGridView.AllowUserToResizeRows = false;
+            coDataGridView.RowHeadersVisible = false;
+            coDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            coDataGridView.MultiSelect = false;
+            coDataGridView.BorderStyle = BorderStyle.None;
+            coDataGridView.BackgroundColor = Color.White;
+            coDataGridView.GridColor = Color.FromArgb(230, 230, 230);
+            coDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            coDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            coDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            coDataGridView.RowTemplate.Height = 70;
+            coDataGridView.Font = new Font("Segoe UI", 9F);
+
+            // Header styling
+            coDataGridView.EnableHeadersVisualStyles = false;
+            coDataGridView.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(248, 249, 250),
+                ForeColor = Color.FromArgb(122, 26, 61),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                Padding = new Padding(8, 0, 0, 0),
+                SelectionBackColor = Color.FromArgb(248, 249, 250),
+                SelectionForeColor = Color.FromArgb(122, 26, 61)
+            };
+            coDataGridView.ColumnHeadersHeight = 40;
+            coDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            coDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+            // Row styling
+            coDataGridView.DefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.White,
+                ForeColor = Color.FromArgb(52, 73, 94),
+                SelectionBackColor = Color.FromArgb(240, 242, 245),
+                SelectionForeColor = Color.FromArgb(52, 73, 94),
+                Padding = new Padding(8, 4, 8, 4),
+                WrapMode = DataGridViewTriState.True
+            };
+            coDataGridView.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(250, 250, 252),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                SelectionBackColor = Color.FromArgb(240, 242, 245),
+                SelectionForeColor = Color.FromArgb(52, 73, 94),
+                Padding = new Padding(8, 4, 8, 4),
+                WrapMode = DataGridViewTriState.True
+            };
+
+            // Columns — wider widths so the grid scrolls horizontally
+            var coColSection = new DataGridViewTextBoxColumn
+            {
+                Name = "Section",
+                HeaderText = "Section",
+                Width = 90,
+                MinimumWidth = 70
+            };
+            var coColSchedule = new DataGridViewTextBoxColumn
+            {
+                Name = "Schedule",
+                HeaderText = "Schedule",
+                Width = 220,
+                MinimumWidth = 180
+            };
+            var coColSlots = new DataGridViewTextBoxColumn
+            {
+                Name = "Slots",
+                HeaderText = "Slots",
+                Width = 100,
+                MinimumWidth = 80,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            };
+            var coColFaculty = new DataGridViewTextBoxColumn
+            {
+                Name = "Faculty",
+                HeaderText = "Faculty",
+                Width = 220,
+                MinimumWidth = 150
+            };
+            var coColMode = new DataGridViewTextBoxColumn
+            {
+                Name = "Mode",
+                HeaderText = "Mode",
+                Width = 100,
+                MinimumWidth = 80,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            };
+            var coColStatus = new DataGridViewTextBoxColumn
+            {
+                Name = "Status",
+                HeaderText = "Status",
+                Width = 90,
+                MinimumWidth = 70,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            };
+            var coColRemarks = new DataGridViewTextBoxColumn
+            {
+                Name = "Remarks",
+                HeaderText = "Remarks",
+                Width = 160,
+                MinimumWidth = 100
+            };
+
+            coDataGridView.Columns.AddRange(coColSection, coColSchedule, coColSlots, coColFaculty, coColMode, coColStatus, coColRemarks);
+
+            coTableContainer.Controls.Add(coDataGridView);
+
+            // --- Empty Label ---
+            coEmptyLabel = new Label();
+            coEmptyLabel.Text = "No offerings available for this course";
+            coEmptyLabel.Font = new Font("Segoe UI", 11F, FontStyle.Italic);
+            coEmptyLabel.ForeColor = Color.FromArgb(150, 150, 150);
+            coEmptyLabel.AutoSize = false;
+            coEmptyLabel.Size = new Size(840, 40);
+            coEmptyLabel.Location = new Point(20, 280);
+            coEmptyLabel.TextAlign = ContentAlignment.MiddleCenter;
+            coEmptyLabel.Visible = false;
+
+            courseOfferingsPagePanel.Controls.Add(coHeaderPanel);
+            courseOfferingsPagePanel.Controls.Add(coSearchPanel);
+            courseOfferingsPagePanel.Controls.Add(coDropdownListBox);
+            courseOfferingsPagePanel.Controls.Add(coLoadingLabel);
+            courseOfferingsPagePanel.Controls.Add(coErrorLabel);
+            courseOfferingsPagePanel.Controls.Add(coInfoPanel);
+            courseOfferingsPagePanel.Controls.Add(coTableContainer);
+            courseOfferingsPagePanel.Controls.Add(coEmptyLabel);
+
+            // Bring dropdown to front so it overlays other controls
+            coDropdownListBox.BringToFront();
+
             // Add all page panels to content panel
             contentPanel.Controls.Add(dashboardPanel);
             contentPanel.Controls.Add(schedulePagePanel);
             contentPanel.Controls.Add(gradesPagePanel);
             contentPanel.Controls.Add(changePasswordPagePanel);
+            contentPanel.Controls.Add(courseOfferingsPagePanel);
 
             // ===========================================
             // Add all to form
@@ -908,6 +1160,23 @@ namespace wildcat_one_windows
         private Panel gradesTableContainer;
         private DataGridView gradesDataGridView;
         private Label gradesEmptyLabel;
+
+        // Course Offerings page
+        private Panel courseOfferingsPagePanel;
+        private Panel coHeaderPanel;
+        private Label coTitle;
+        private Panel coSearchPanel;
+        private Label coSearchLabel;
+        private TextBox coSearchTextBox;
+        private Button coSearchButton;
+        private ListBox coDropdownListBox;
+        private Label coLoadingLabel;
+        private Label coErrorLabel;
+        private Panel coInfoPanel;
+        private Label coInfoLabel;
+        private Panel coTableContainer;
+        private DataGridView coDataGridView;
+        private Label coEmptyLabel;
 
         // Change Password page
         private Panel changePasswordPagePanel;

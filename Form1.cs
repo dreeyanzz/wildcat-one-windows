@@ -23,6 +23,14 @@ namespace wildcat_one_windows
         private List<JsonElement> _gradeEnrollments = [];
         private bool _gradesPageLoaded;
 
+        // Course offerings page state
+        private List<JsonElement> _coAllCourses = [];
+        private List<JsonElement> _coFilteredCourses = [];
+        private JsonElement? _coSelectedCourse;
+        private List<JsonElement> _coOfferings = [];
+        private string _coSortBy = "section";
+        private bool _coPageLoaded;
+
         // Change password page state
         private int _cpStep = 1;
         private string? _cpStoredOldPassword;
@@ -48,6 +56,14 @@ namespace wildcat_one_windows
             gradesSemesterComboBox.SelectedIndexChanged +=
                 GradesSemesterComboBox_SelectedIndexChanged;
             gradesDataGridView.CellFormatting += GradesDataGridView_CellFormatting;
+
+            // Wire course offerings page events
+            coSearchTextBox.TextChanged += CoSearchTextBox_TextChanged;
+            coSearchTextBox.GotFocus += CoSearchTextBox_GotFocus;
+            coSearchButton.Click += CoSearchButton_Click;
+            coDropdownListBox.SelectedIndexChanged += CoDropdownListBox_SelectedIndexChanged;
+            coDataGridView.ColumnHeaderMouseClick += CoDataGridView_ColumnHeaderMouseClick;
+            coDataGridView.CellFormatting += CoDataGridView_CellFormatting;
         }
 
         // ===========================================
@@ -480,15 +496,12 @@ namespace wildcat_one_windows
             );
         }
 
-        private void BtnCourseOfferings_Click(object? sender, EventArgs e)
+        private async void BtnCourseOfferings_Click(object? sender, EventArgs e)
         {
             SetActiveSidebarButton(btnCourseOfferings);
-            MessageBox.Show(
-                "Coming soon!",
-                "Course Offerings",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
+            ShowPage("courseOfferings");
+            if (!_coPageLoaded)
+                await CoLoadCoursesAsync();
         }
 
         private void BtnChangePassword_Click(object? sender, EventArgs e)
@@ -587,6 +600,7 @@ namespace wildcat_one_windows
             dashboardPanel.Visible = page == "dashboard";
             schedulePagePanel.Visible = page == "schedule";
             gradesPagePanel.Visible = page == "grades";
+            courseOfferingsPagePanel.Visible = page == "courseOfferings";
             changePasswordPagePanel.Visible = page == "changePassword";
         }
 
@@ -1360,6 +1374,493 @@ namespace wildcat_one_windows
 
             e.CellStyle!.ForeColor = gradeColor;
             e.CellStyle.SelectionForeColor = gradeColor;
+            e.CellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        }
+
+        // ===========================================
+        // Course Offerings Page
+        // ===========================================
+
+        private async Task CoLoadCoursesAsync()
+        {
+            coLoadingLabel.Text = "Loading courses...";
+            coLoadingLabel.Visible = true;
+            coErrorLabel.Visible = false;
+            coSearchTextBox.Enabled = false;
+            coSearchButton.Enabled = false;
+
+            try
+            {
+                var result = await CourseOfferingsService.LoadCoursesAsync();
+
+                if (
+                    result.Status == 200
+                    && result.Data.TryGetProperty("items", out var items)
+                    && items.ValueKind == JsonValueKind.Array
+                )
+                {
+                    _coAllCourses = items.EnumerateArray().ToList();
+                    _coFilteredCourses = new List<JsonElement>(_coAllCourses);
+                    _coPageLoaded = true;
+                }
+                else
+                {
+                    coErrorLabel.Text = "Failed to load courses. Please try again.";
+                    coErrorLabel.Visible = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                coErrorLabel.Text = ex.Message;
+                coErrorLabel.Visible = true;
+            }
+            finally
+            {
+                coLoadingLabel.Visible = false;
+                coSearchTextBox.Enabled = true;
+                coSearchButton.Enabled = true;
+            }
+        }
+
+        private void CoSearchTextBox_GotFocus(object? sender, EventArgs e)
+        {
+            // When focusing with empty text, show all courses
+            if (string.IsNullOrEmpty(coSearchTextBox.Text.Trim()) && _coAllCourses.Count > 0)
+            {
+                _coSelectedCourse = null;
+                CoShowDropdown(_coAllCourses);
+            }
+        }
+
+        private void CoSearchTextBox_TextChanged(object? sender, EventArgs e)
+        {
+            _coSelectedCourse = null;
+            var searchText = coSearchTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(searchText))
+            {
+                _coFilteredCourses = new List<JsonElement>(_coAllCourses);
+                CoShowDropdown(_coAllCourses);
+                return;
+            }
+
+            _coFilteredCourses = _coAllCourses
+                .Where(c =>
+                {
+                    var code = TryGetString(c, "courseCode") ?? "";
+                    var name = TryGetString(c, "courseName") ?? TryGetString(c, "name") ?? "";
+                    return code.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                        || name.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+                })
+                .ToList();
+
+            CoShowDropdown(_coFilteredCourses);
+        }
+
+        private void CoShowDropdown(List<JsonElement> courses)
+        {
+            coDropdownListBox.Items.Clear();
+
+            if (courses.Count > 0)
+            {
+                foreach (var course in courses)
+                {
+                    var code = TryGetString(course, "courseCode") ?? "";
+                    var name = TryGetString(course, "courseName") ?? TryGetString(course, "name") ?? "";
+                    coDropdownListBox.Items.Add($"{code} - {name}");
+                }
+
+                var itemHeight = coDropdownListBox.ItemHeight;
+                var visibleItems = Math.Min(courses.Count, 10);
+                coDropdownListBox.Size = new Size(500, visibleItems * itemHeight + 4);
+                coDropdownListBox.Visible = true;
+                coDropdownListBox.BringToFront();
+            }
+            else
+            {
+                coDropdownListBox.Visible = false;
+            }
+        }
+
+        private async void CoDropdownListBox_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            var idx = coDropdownListBox.SelectedIndex;
+            if (idx < 0 || idx >= _coFilteredCourses.Count)
+                return;
+
+            _coSelectedCourse = _coFilteredCourses[idx];
+
+            var code = TryGetString(_coSelectedCourse.Value, "courseCode") ?? "";
+            var name =
+                TryGetString(_coSelectedCourse.Value, "courseName")
+                ?? TryGetString(_coSelectedCourse.Value, "name")
+                ?? "";
+            coSearchTextBox.TextChanged -= CoSearchTextBox_TextChanged;
+            coSearchTextBox.Text = $"{code} - {name}";
+            coSearchTextBox.TextChanged += CoSearchTextBox_TextChanged;
+
+            coDropdownListBox.Visible = false;
+
+            await CoSearchOfferingsAsync();
+        }
+
+        private async void CoSearchButton_Click(object? sender, EventArgs e)
+        {
+            if (_coSelectedCourse is null)
+            {
+                // Try to auto-select first match
+                if (_coFilteredCourses.Count > 0)
+                {
+                    _coSelectedCourse = _coFilteredCourses[0];
+                    var code = TryGetString(_coSelectedCourse.Value, "courseCode") ?? "";
+                    var name =
+                        TryGetString(_coSelectedCourse.Value, "courseName")
+                        ?? TryGetString(_coSelectedCourse.Value, "name")
+                        ?? "";
+                    coSearchTextBox.TextChanged -= CoSearchTextBox_TextChanged;
+                    coSearchTextBox.Text = $"{code} - {name}";
+                    coSearchTextBox.TextChanged += CoSearchTextBox_TextChanged;
+                    coDropdownListBox.Visible = false;
+                }
+                else
+                {
+                    coErrorLabel.Text = "Please select a course first.";
+                    coErrorLabel.Visible = true;
+                    return;
+                }
+            }
+
+            await CoSearchOfferingsAsync();
+        }
+
+        private async Task CoSearchOfferingsAsync()
+        {
+            if (_coSelectedCourse is not JsonElement selectedCourse)
+                return;
+
+            coLoadingLabel.Text = "Searching offerings...";
+            coLoadingLabel.Visible = true;
+            coErrorLabel.Visible = false;
+            coEmptyLabel.Visible = false;
+            coTableContainer.Visible = false;
+            coInfoPanel.Visible = false;
+            coSearchButton.Enabled = false;
+
+            try
+            {
+                var idCourse = selectedCourse.TryGetProperty("idCourse", out var idProp)
+                    ? idProp.ToString()
+                    : "";
+
+                var result = await CourseOfferingsService.SearchOfferingsAsync(idCourse);
+
+                if (result.Status == 200)
+                {
+                    // Try multiple response structures:
+                    // 1. data.items.courseOfferings (array)
+                    // 2. data.items (array directly)
+                    // 3. data.items (object with nested arrays)
+                    List<JsonElement>? offeringsList = null;
+
+                    if (result.Data.TryGetProperty("items", out var items))
+                    {
+                        if (
+                            items.TryGetProperty("courseOfferings", out var offerings)
+                            && offerings.ValueKind == JsonValueKind.Array
+                        )
+                        {
+                            offeringsList = offerings.EnumerateArray().ToList();
+                        }
+                        else if (items.ValueKind == JsonValueKind.Array)
+                        {
+                            offeringsList = items.EnumerateArray().ToList();
+                        }
+                        else if (items.ValueKind == JsonValueKind.Object)
+                        {
+                            // Try to find any array property inside items
+                            foreach (var prop in items.EnumerateObject())
+                            {
+                                if (prop.Value.ValueKind == JsonValueKind.Array)
+                                {
+                                    offeringsList = prop.Value.EnumerateArray().ToList();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (result.Data.ValueKind == JsonValueKind.Array)
+                    {
+                        offeringsList = result.Data.EnumerateArray().ToList();
+                    }
+
+                    if (offeringsList is not null)
+                    {
+                        _coOfferings = offeringsList;
+
+                        var code = TryGetString(selectedCourse, "courseCode") ?? "";
+                        var name =
+                            TryGetString(selectedCourse, "courseName")
+                            ?? TryGetString(selectedCourse, "name")
+                            ?? "";
+                        coInfoLabel.Text = $"Course Code: {code}  |  Course Name: {name}";
+                        coInfoPanel.Visible = true;
+
+                        if (_coOfferings.Count > 0)
+                        {
+                            CoPopulateOfferingsTable();
+                            coTableContainer.Visible = true;
+                            coEmptyLabel.Visible = false;
+                        }
+                        else
+                        {
+                            coTableContainer.Visible = false;
+                            coEmptyLabel.Visible = true;
+                        }
+                    }
+                    else
+                    {
+                        // Show response structure for debugging
+                        var keys = new List<string>();
+                        if (result.Data.ValueKind == JsonValueKind.Object)
+                        {
+                            foreach (var prop in result.Data.EnumerateObject())
+                                keys.Add($"{prop.Name}({prop.Value.ValueKind})");
+                        }
+                        var debugInfo = keys.Count > 0
+                            ? $"Keys: {string.Join(", ", keys)}"
+                            : $"Type: {result.Data.ValueKind}";
+                        coErrorLabel.Text =
+                            $"Unexpected response format. {debugInfo}";
+                        coErrorLabel.Visible = true;
+                    }
+                }
+                else
+                {
+                    var msg = "Failed to load offerings.";
+                    if (
+                        result.Data.ValueKind == JsonValueKind.Object
+                        && result.Data.TryGetProperty("message", out var msgProp)
+                    )
+                        msg = msgProp.GetString() ?? msg;
+                    coErrorLabel.Text = $"{msg} (Status: {result.Status})";
+                    coErrorLabel.Visible = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                coErrorLabel.Text = ex.Message;
+                coErrorLabel.Visible = true;
+            }
+            finally
+            {
+                coLoadingLabel.Visible = false;
+                coSearchButton.Enabled = true;
+            }
+        }
+
+        private void CoPopulateOfferingsTable()
+        {
+            coDataGridView.Rows.Clear();
+
+            // Sort offerings
+            var sorted = CoSortOfferings(_coOfferings, _coSortBy);
+
+            foreach (var offering in sorted)
+            {
+                // Section
+                var section = TryGetString(offering, "courseSection") ?? "N/A";
+
+                // Schedule: array of schedule entries
+                var scheduleText = "";
+                if (
+                    offering.TryGetProperty("schedule", out var schedArr)
+                    && schedArr.ValueKind == JsonValueKind.Array
+                )
+                {
+                    var lines = new List<string>();
+                    foreach (var sched in schedArr.EnumerateArray())
+                    {
+                        // day is a simple string like "W" or "MTH" (padded with \u00A0)
+                        var day = (TryGetString(sched, "day") ?? "TBA").Trim().Replace("\u00A0", "").Trim();
+                        // time is a combined string like "11:30 AM - 01:30 PM"
+                        var time = (TryGetString(sched, "time") ?? "TBA").Trim().Replace("\u00A0", "").Trim();
+                        // roomNo is the clean room identifier
+                        var room = (TryGetString(sched, "roomNo") ?? TryGetString(sched, "room") ?? "TBA").Trim().Replace("\u00A0", "").Trim();
+
+                        // Check if lab
+                        var isLab = false;
+                        if (sched.TryGetProperty("lab", out var labProp))
+                        {
+                            if (labProp.ValueKind == JsonValueKind.True)
+                                isLab = true;
+                            else if (labProp.ValueKind == JsonValueKind.String)
+                                isLab = labProp.GetString()?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+                        }
+                        var labIndicator = isLab ? " (Lab)" : "";
+
+                        var line = $"{day}{labIndicator} {time}";
+                        if (!string.IsNullOrEmpty(room) && room != "TBA")
+                            line += $"\n📍 {room}";
+                        lines.Add(line);
+                    }
+                    scheduleText = string.Join("\n", lines);
+                }
+
+                // Slots: assessed + enrolled vs maxStudents
+                int assessed = 0, enrolled = 0, maxStudents = 0;
+                if (offering.TryGetProperty("assessed", out var assessedProp))
+                    int.TryParse(assessedProp.ToString(), out assessed);
+                if (offering.TryGetProperty("enrolled", out var enrolledProp))
+                    int.TryParse(enrolledProp.ToString(), out enrolled);
+                if (offering.TryGetProperty("maxStudents", out var maxProp))
+                    int.TryParse(maxProp.ToString(), out maxStudents);
+                var occupied = assessed + enrolled;
+                var slotsText = $"{occupied} / {maxStudents}";
+
+                // Faculty
+                var faculty = TryGetString(offering, "faculty") ?? "";
+                var coFaculty = TryGetString(offering, "coFaculty") ?? "";
+                var facultyText = faculty;
+                if (!string.IsNullOrEmpty(coFaculty))
+                    facultyText += $"\n{coFaculty}";
+                if (string.IsNullOrEmpty(facultyText))
+                    facultyText = "TBA";
+
+                // Mode
+                var mode = TryGetString(offering, "modeOfDelivery") ?? "N/A";
+
+                // Status
+                var isClosed = TryGetString(offering, "isClosed") ?? "N";
+                var reserved = TryGetString(offering, "reserved") ?? "N";
+                string status;
+                if (isClosed.Equals("Y", StringComparison.OrdinalIgnoreCase)
+                    || reserved.Equals("Y", StringComparison.OrdinalIgnoreCase))
+                    status = "Closed";
+                else if (occupied >= maxStudents && maxStudents > 0)
+                    status = "Full";
+                else
+                    status = "Open";
+
+                // Remarks
+                var remarks = TryGetString(offering, "remarks") ?? "";
+
+                coDataGridView.Rows.Add(
+                    section,
+                    scheduleText,
+                    slotsText,
+                    facultyText,
+                    mode,
+                    status,
+                    remarks
+                );
+            }
+        }
+
+        private static List<JsonElement> CoSortOfferings(List<JsonElement> offerings, string sortBy)
+        {
+            return sortBy switch
+            {
+                "section" => offerings
+                    .OrderBy(o => TryGetString(o, "courseSection") ?? "")
+                    .ToList(),
+                "slots" =>
+                    offerings
+                        .OrderByDescending(o =>
+                        {
+                            int.TryParse(
+                                o.TryGetProperty("assessed", out var a)
+                                    ? a.ToString()
+                                    : "0",
+                                out var assessed
+                            );
+                            int.TryParse(
+                                o.TryGetProperty("enrolled", out var e)
+                                    ? e.ToString()
+                                    : "0",
+                                out var enrolled
+                            );
+                            return assessed + enrolled;
+                        })
+                        .ToList(),
+                "faculty" => offerings
+                    .OrderBy(o => TryGetString(o, "faculty") ?? "ZZZ")
+                    .ToList(),
+                "status" =>
+                    offerings
+                        .OrderBy(o =>
+                        {
+                            var isClosed = TryGetString(o, "isClosed") ?? "N";
+                            var reserved = TryGetString(o, "reserved") ?? "N";
+                            if (
+                                isClosed.Equals("Y", StringComparison.OrdinalIgnoreCase)
+                                || reserved.Equals("Y", StringComparison.OrdinalIgnoreCase)
+                            )
+                                return 2;
+                            int.TryParse(
+                                o.TryGetProperty("assessed", out var a)
+                                    ? a.ToString()
+                                    : "0",
+                                out var assessed
+                            );
+                            int.TryParse(
+                                o.TryGetProperty("enrolled", out var e)
+                                    ? e.ToString()
+                                    : "0",
+                                out var enrolled
+                            );
+                            int.TryParse(
+                                o.TryGetProperty("maxStudents", out var m)
+                                    ? m.ToString()
+                                    : "0",
+                                out var max
+                            );
+                            return (assessed + enrolled >= max && max > 0) ? 1 : 0;
+                        })
+                        .ToList(),
+                _ => offerings,
+            };
+        }
+
+        private void CoDataGridView_ColumnHeaderMouseClick(
+            object? sender,
+            DataGridViewCellMouseEventArgs e
+        )
+        {
+            var colName = coDataGridView.Columns[e.ColumnIndex].Name;
+            _coSortBy = colName switch
+            {
+                "Section" => "section",
+                "Slots" => "slots",
+                "Faculty" => "faculty",
+                "Status" => "status",
+                _ => _coSortBy,
+            };
+
+            if (_coOfferings.Count > 0)
+                CoPopulateOfferingsTable();
+        }
+
+        private void CoDataGridView_CellFormatting(
+            object? sender,
+            DataGridViewCellFormattingEventArgs e
+        )
+        {
+            // Status column is index 5
+            if (e.ColumnIndex != 5)
+                return;
+            if (e.Value is not string statusStr || string.IsNullOrEmpty(statusStr))
+                return;
+
+            Color statusColor = statusStr switch
+            {
+                "Open" => Color.FromArgb(39, 174, 96),
+                "Full" => Color.FromArgb(243, 156, 18),
+                "Closed" => Color.FromArgb(231, 76, 60),
+                _ => Color.FromArgb(52, 73, 94),
+            };
+
+            e.CellStyle!.ForeColor = statusColor;
+            e.CellStyle.SelectionForeColor = statusColor;
             e.CellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         }
 
