@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(dotnet:*)",
+      "Bash(copy \"C:\\\\Users\\\\dreeyanzz\\\\Documents\\\\dev\\\\student-portal\\\\src\\\\assets\\\\cit-logo.png\" \"C:\\\\Users\\\\dreeyanzz\\\\Documents\\\\dev\\\\wildcat-one-windows\\\\Assets\\\\cit-logo.png\")",
+      "Bash(curl:*)",
+      "Bash(powershell:*)",
+      "Bash(node --version:*)",
+      "Bash(node:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git init:*)",
+      "Bash(git status:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
