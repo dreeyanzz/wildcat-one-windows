@@ -46,6 +46,38 @@ public static class AuthService
         return new AuthResult(true, userInfo);
     }
 
+    public static async Task<ForgotPasswordResult> ForgotPasswordAsync(string studentId, DateTime birthdate)
+    {
+        Validator.ValidateRequired(studentId, "Student ID");
+        Validator.ValidateStudentId(studentId);
+
+        var utcBirthdate = new DateTime(birthdate.Year, birthdate.Month, birthdate.Day, 0, 0, 0, DateTimeKind.Utc);
+        var formattedBirthdate = utcBirthdate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+        var result = await ApiService.PostAsync(
+            "/api/user/student/forgotpassword",
+            new { studentID = studentId, studentBirthDate = formattedBirthdate },
+            AppConfig.LOGIN_URL,
+            new ApiOptions { IsLoginRequest = true });
+
+        if (result.Status == 404)
+        {
+            var msg = "Record does not exist. Please check your Student ID and birthdate.";
+            if (result.Data.ValueKind == JsonValueKind.Object && result.Data.TryGetProperty("message", out var msgProp))
+                msg = msgProp.GetString() ?? msg;
+            throw new AuthenticationException(msg);
+        }
+
+        if (!result.Success)
+            throw new AuthenticationException("Password reset failed. Please try again.");
+
+        var message = "Password reset is successful. Please check your email.";
+        if (result.Data.ValueKind == JsonValueKind.Object && result.Data.TryGetProperty("message", out var responseMsgProp))
+            message = responseMsgProp.GetString() ?? message;
+
+        return new ForgotPasswordResult(true, message);
+    }
+
     public static void Logout()
     {
         SessionManager.Instance.Reset();
@@ -153,3 +185,4 @@ public static class AuthService
 }
 
 public record AuthResult(bool Success, JsonElement UserData);
+public record ForgotPasswordResult(bool Success, string Message);
