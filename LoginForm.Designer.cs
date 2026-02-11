@@ -113,7 +113,6 @@ namespace wildcat_one_windows
             studentIdTextBox.BackColor = Color.FromArgb(248, 249, 251); // #f8f9fb
             studentIdTextBox.BorderStyle = BorderStyle.FixedSingle;
             studentIdTextBox.PlaceholderText = "24-4339-705";
-            studentIdTextBox.Text = "24-4339-705"; // DEV: pre-fill for convenience
             studentIdTextBox.TextChanged += Input_TextChanged;
 
             // === Password Label ===
@@ -133,7 +132,6 @@ namespace wildcat_one_windows
             passwordTextBox.BorderStyle = BorderStyle.FixedSingle;
             passwordTextBox.UseSystemPasswordChar = true;
             passwordTextBox.PlaceholderText = "Enter your password";
-            passwordTextBox.Text = "adriri"; // DEV: pre-fill for convenience
             passwordTextBox.TextChanged += Input_TextChanged;
 
             // === Show/Hide Password Button ===
