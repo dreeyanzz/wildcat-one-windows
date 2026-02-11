@@ -27,8 +27,10 @@ jobs:
       - name: Publish app
         run: dotnet publish -c Release -o ./publish --self-contained -r win-x64
 
-      - name: Zip release
-        run: Compress-Archive -Path ./publish/* -DestinationPath ./wildcat-one-windows-${{ github.ref_name }}.zip
+      - name: Build installer with Inno Setup
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          iscc /DMyAppVersion="$version" installer.iss
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -37,5 +39,6 @@ jobs:
           body: |
             ## Wildcat One ${{ github.ref_name }}
             
-            Download the zip, extract it, and run `wildcat-one-windows.exe`.
-          files: ./wildcat-one-windows-${{ github.ref_name }}.zip
+            Download and run `WildcatOneSetup.exe` to install.
+          files: ./WildcatOneSetup.exe
+

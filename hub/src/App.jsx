@@ -31,7 +31,7 @@ function App() {
               Access grades, schedules, and more in one unified desktop experience.
             </p>
             <div className="hero-actions">
-              <a href="https://github.com/dreeyanzz/wildcat-one-windows/releases" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+              <a href="https://github.com/dreeyanzz/wildcat-one-windows/releases/latest/download/WildcatOneSetup.exe" className="btn btn-primary">
                 Download for Windows
               </a>
               <a href="https://wits-student.vercel.app/" target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
