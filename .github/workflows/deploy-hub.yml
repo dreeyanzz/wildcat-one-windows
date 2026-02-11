@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - 'hub/**'
+      - '.github/workflows/deploy-hub.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
