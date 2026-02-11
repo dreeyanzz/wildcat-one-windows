@@ -12,3 +12,7 @@ obj/
 
 ## Screenshots used for debugging
 image.png
+
+## Hub (React)
+hub/node_modules/
+hub/dist/
