@@ -45,7 +45,8 @@ namespace wildcat_one_windows
             scheduleGridPanel.MouseMove += ScheduleGridPanel_MouseMove;
 
             // Wire grades page events
-            gradesSemesterComboBox.SelectedIndexChanged += GradesSemesterComboBox_SelectedIndexChanged;
+            gradesSemesterComboBox.SelectedIndexChanged +=
+                GradesSemesterComboBox_SelectedIndexChanged;
             gradesDataGridView.CellFormatting += GradesDataGridView_CellFormatting;
         }
 
@@ -71,10 +72,14 @@ namespace wildcat_one_windows
 
             if (userData is JsonElement ud)
             {
-                if (ud.TryGetProperty("firstName", out var fn)) firstName = fn.ToString();
-                if (ud.TryGetProperty("lastName", out var ln)) lastName = ln.ToString();
-                if (ud.TryGetProperty("studentIdNumber", out var sid)) visibleId = sid.ToString();
-                else if (ud.TryGetProperty("userId", out var uid)) visibleId = uid.ToString();
+                if (ud.TryGetProperty("firstName", out var fn))
+                    firstName = fn.ToString();
+                if (ud.TryGetProperty("lastName", out var ln))
+                    lastName = ln.ToString();
+                if (ud.TryGetProperty("studentIdNumber", out var sid))
+                    visibleId = sid.ToString();
+                else if (ud.TryGetProperty("userId", out var uid))
+                    visibleId = uid.ToString();
             }
 
             var fullName = $"{firstName} {lastName}".Trim();
@@ -84,7 +89,8 @@ namespace wildcat_one_windows
             sidebarNameLabel.Text = fullName;
             sidebarIdLabel.Text = visibleId;
             welcomeNameLabel.Text = fullName;
-            welcomeDetailsLabel.Text = $"Student ID: {visibleId}  |  Academic Year: {yearName}  |  Term: {termName}";
+            welcomeDetailsLabel.Text =
+                $"Student ID: {visibleId}  |  Academic Year: {yearName}  |  Term: {termName}";
         }
 
         private void PositionLogoutButton()
@@ -160,14 +166,14 @@ namespace wildcat_one_windows
             // Day codes: SU=0, M=1, T=2, W=3, TH=4, F=5, S=6
             var todayCode = DateTime.Now.DayOfWeek switch
             {
-                DayOfWeek.Sunday    => "SU",
-                DayOfWeek.Monday    => "M",
-                DayOfWeek.Tuesday   => "T",
+                DayOfWeek.Sunday => "SU",
+                DayOfWeek.Monday => "M",
+                DayOfWeek.Tuesday => "T",
                 DayOfWeek.Wednesday => "W",
-                DayOfWeek.Thursday  => "TH",
-                DayOfWeek.Friday    => "F",
-                DayOfWeek.Saturday  => "S",
-                _ => ""
+                DayOfWeek.Thursday => "TH",
+                DayOfWeek.Friday => "F",
+                DayOfWeek.Saturday => "S",
+                _ => "",
             };
 
             // Each item has a "schedule" array, each entry has a "day" array of {code: "M"} objects
@@ -175,18 +181,28 @@ namespace wildcat_one_windows
 
             foreach (var course in schedule.EnumerateArray())
             {
-                if (!course.TryGetProperty("schedule", out var schedArr) || schedArr.ValueKind != JsonValueKind.Array)
+                if (
+                    !course.TryGetProperty("schedule", out var schedArr)
+                    || schedArr.ValueKind != JsonValueKind.Array
+                )
                     continue;
 
                 foreach (var sched in schedArr.EnumerateArray())
                 {
-                    if (!sched.TryGetProperty("day", out var dayArr) || dayArr.ValueKind != JsonValueKind.Array)
+                    if (
+                        !sched.TryGetProperty("day", out var dayArr)
+                        || dayArr.ValueKind != JsonValueKind.Array
+                    )
                         continue;
 
                     foreach (var d in dayArr.EnumerateArray())
                     {
-                        if (d.TryGetProperty("code", out var codeProp) &&
-                            codeProp.GetString()?.Equals(todayCode, StringComparison.OrdinalIgnoreCase) == true)
+                        if (
+                            d.TryGetProperty("code", out var codeProp)
+                            && codeProp
+                                .GetString()
+                                ?.Equals(todayCode, StringComparison.OrdinalIgnoreCase) == true
+                        )
                         {
                             todayClasses.Add((course, sched));
                             break;
@@ -202,12 +218,14 @@ namespace wildcat_one_windows
             }
 
             // Sort by timeFrom
-            todayClasses.Sort((a, b) =>
-            {
-                var ta = TryGetString(a.sched, "timeFrom") ?? "";
-                var tb = TryGetString(b.sched, "timeFrom") ?? "";
-                return ParseTimeMinutes(ta).CompareTo(ParseTimeMinutes(tb));
-            });
+            todayClasses.Sort(
+                (a, b) =>
+                {
+                    var ta = TryGetString(a.sched, "timeFrom") ?? "";
+                    var tb = TryGetString(b.sched, "timeFrom") ?? "";
+                    return ParseTimeMinutes(ta).CompareTo(ParseTimeMinutes(tb));
+                }
+            );
 
             var yOffset = 5;
             foreach (var (course, sched) in todayClasses)
@@ -220,14 +238,22 @@ namespace wildcat_one_windows
 
         private static int ParseTimeMinutes(string timeStr)
         {
-            if (string.IsNullOrEmpty(timeStr)) return 0;
-            var match = System.Text.RegularExpressions.Regex.Match(timeStr, @"(\d{1,2}):(\d{2})\s*(AM|PM)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (!match.Success) return 0;
+            if (string.IsNullOrEmpty(timeStr))
+                return 0;
+            var match = System.Text.RegularExpressions.Regex.Match(
+                timeStr,
+                @"(\d{1,2}):(\d{2})\s*(AM|PM)",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase
+            );
+            if (!match.Success)
+                return 0;
             var hours = int.Parse(match.Groups[1].Value);
             var minutes = int.Parse(match.Groups[2].Value);
             var period = match.Groups[3].Value.ToUpper();
-            if (period == "PM" && hours != 12) hours += 12;
-            else if (period == "AM" && hours == 12) hours = 0;
+            if (period == "PM" && hours != 12)
+                hours += 12;
+            else if (period == "AM" && hours == 12)
+                hours = 0;
             return hours * 60 + minutes;
         }
 
@@ -263,7 +289,7 @@ namespace wildcat_one_windows
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(122, 26, 61),
                 Location = new Point(14, 8),
-                AutoSize = true
+                AutoSize = true,
             };
             codeLabel.ContextMenuStrip = classContextMenu;
 
@@ -273,7 +299,7 @@ namespace wildcat_one_windows
                 Font = new Font("Segoe UI", 9.5F),
                 ForeColor = Color.FromArgb(80, 80, 80),
                 Location = new Point(14, 34),
-                AutoSize = true
+                AutoSize = true,
             };
             nameLabel.ContextMenuStrip = classContextMenu;
 
@@ -283,7 +309,7 @@ namespace wildcat_one_windows
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = Color.FromArgb(100, 100, 100),
                 Location = new Point(400, 10),
-                AutoSize = true
+                AutoSize = true,
             };
             timeLabel.ContextMenuStrip = classContextMenu;
 
@@ -293,7 +319,7 @@ namespace wildcat_one_windows
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = Color.FromArgb(100, 100, 100),
                 Location = new Point(400, 34),
-                AutoSize = true
+                AutoSize = true,
             };
             roomLabel.ContextMenuStrip = classContextMenu;
 
@@ -303,7 +329,7 @@ namespace wildcat_one_windows
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = Color.FromArgb(120, 120, 120),
                 Location = new Point(600, 10),
-                AutoSize = true
+                AutoSize = true,
             };
             profLabel.ContextMenuStrip = classContextMenu;
 
@@ -329,7 +355,8 @@ namespace wildcat_one_windows
         /// </summary>
         private static string? FormatGrade(string? raw)
         {
-            if (string.IsNullOrWhiteSpace(raw)) return raw;
+            if (string.IsNullOrWhiteSpace(raw))
+                return raw;
             if (double.TryParse(raw, out var val))
                 return val.ToString("0.0");
             return raw;
@@ -350,8 +377,10 @@ namespace wildcat_one_windows
 
             // grades API returns { items: { studentEnrollments: [...] } }
             // data is already "items" from DashboardService
-            if (data.TryGetProperty("studentEnrollments", out var enrollments) &&
-                enrollments.ValueKind == JsonValueKind.Array)
+            if (
+                data.TryGetProperty("studentEnrollments", out var enrollments)
+                && enrollments.ValueKind == JsonValueKind.Array
+            )
             {
                 var list = enrollments.EnumerateArray().ToList();
                 if (list.Count > 0)
@@ -372,7 +401,10 @@ namespace wildcat_one_windows
                     }
 
                     // Semester
-                    if (current.TryGetProperty("term", out var termProp) && termProp.ValueKind == JsonValueKind.String)
+                    if (
+                        current.TryGetProperty("term", out var termProp)
+                        && termProp.ValueKind == JsonValueKind.String
+                    )
                         UpdateStatValue(statSemesterPanel, termProp.GetString() ?? "N/A");
                     else
                         UpdateStatValue(statSemesterPanel, "N/A");
@@ -440,13 +472,23 @@ namespace wildcat_one_windows
         private void BtnProfessors_Click(object? sender, EventArgs e)
         {
             SetActiveSidebarButton(btnProfessors);
-            MessageBox.Show("Coming soon!", "Professors", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                "Coming soon!",
+                "Professors",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
         }
 
         private void BtnCourseOfferings_Click(object? sender, EventArgs e)
         {
             SetActiveSidebarButton(btnCourseOfferings);
-            MessageBox.Show("Coming soon!", "Course Offerings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                "Coming soon!",
+                "Course Offerings",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
         }
 
         private void BtnChangePassword_Click(object? sender, EventArgs e)
@@ -465,18 +507,34 @@ namespace wildcat_one_windows
         // ===========================================
 
         private void MenuLogout_Click(object? sender, EventArgs e) => PerformLogout();
+
         private void MenuExit_Click(object? sender, EventArgs e) => Application.Exit();
 
-        private void MenuDashboard_Click(object? sender, EventArgs e) => BtnDashboard_Click(sender, e);
-        private void MenuSchedule_Click(object? sender, EventArgs e) => BtnSchedule_Click(sender, e);
+        private void MenuDashboard_Click(object? sender, EventArgs e) =>
+            BtnDashboard_Click(sender, e);
+
+        private void MenuSchedule_Click(object? sender, EventArgs e) =>
+            BtnSchedule_Click(sender, e);
+
         private void MenuGrades_Click(object? sender, EventArgs e) => BtnGrades_Click(sender, e);
-        private void MenuProfessors_Click(object? sender, EventArgs e) => BtnProfessors_Click(sender, e);
-        private void MenuCourseOfferings_Click(object? sender, EventArgs e) => BtnCourseOfferings_Click(sender, e);
-        private void MenuChangePassword_Click(object? sender, EventArgs e) => BtnChangePassword_Click(sender, e);
+
+        private void MenuProfessors_Click(object? sender, EventArgs e) =>
+            BtnProfessors_Click(sender, e);
+
+        private void MenuCourseOfferings_Click(object? sender, EventArgs e) =>
+            BtnCourseOfferings_Click(sender, e);
+
+        private void MenuChangePassword_Click(object? sender, EventArgs e) =>
+            BtnChangePassword_Click(sender, e);
 
         private void MenuAbout_Click(object? sender, EventArgs e)
         {
-            MessageBox.Show("Wildcat One v1.0\nCIT-U Student Portal", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                "Wildcat One v1.0\nCIT-U Student Portal",
+                "About",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
         }
 
         // ===========================================
@@ -485,12 +543,15 @@ namespace wildcat_one_windows
 
         private ClassCardData? GetClassCardDataFromContext(object? sender)
         {
-            if (sender is not ToolStripMenuItem menuItem) return null;
-            if (menuItem.Owner is not ContextMenuStrip ctx) return null;
+            if (sender is not ToolStripMenuItem menuItem)
+                return null;
+            if (menuItem.Owner is not ContextMenuStrip ctx)
+                return null;
             var source = ctx.SourceControl;
             while (source is not null)
             {
-                if (source.Tag is ClassCardData data) return data;
+                if (source.Tag is ClassCardData data)
+                    return data;
                 source = source.Parent;
             }
             return null;
@@ -562,7 +623,10 @@ namespace wildcat_one_windows
                     {
                         for (int i = 0; i < _semesterOptions.Count; i++)
                         {
-                            if (_semesterOptions[i].YearId == currentYearId && _semesterOptions[i].TermId == currentTermId)
+                            if (
+                                _semesterOptions[i].YearId == currentYearId
+                                && _semesterOptions[i].TermId == currentTermId
+                            )
                             {
                                 selectedIdx = i;
                                 break;
@@ -584,19 +648,26 @@ namespace wildcat_one_windows
 
         private async void SemesterComboBox_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (!semesterComboBox.Enabled || _semesterOptions.Count == 0) return;
+            if (!semesterComboBox.Enabled || _semesterOptions.Count == 0)
+                return;
             var idx = semesterComboBox.SelectedIndex;
-            if (idx < 0 || idx >= _semesterOptions.Count) return;
+            if (idx < 0 || idx >= _semesterOptions.Count)
+                return;
 
             var opt = _semesterOptions[idx];
             semesterInfoLabel.Text = $"Academic Year: {opt.YearName}  |  Semester: {opt.TermName}";
 
             var studentId = SessionManager.Instance.UserData?.GetProperty("studentId").ToString();
-            if (studentId is null) return;
+            if (studentId is null)
+                return;
 
             try
             {
-                _scheduleCourses = await ScheduleService.FetchScheduleAsync(studentId, opt.YearId, opt.TermId);
+                _scheduleCourses = await ScheduleService.FetchScheduleAsync(
+                    studentId,
+                    opt.YearId,
+                    opt.TermId
+                );
             }
             catch
             {
@@ -613,16 +684,55 @@ namespace wildcat_one_windows
 
         private static readonly Dictionary<string, int> DayCodeMap = new()
         {
-            ["M"] = 0, ["T"] = 1, ["W"] = 2, ["TH"] = 3, ["F"] = 4, ["S"] = 5, ["SU"] = 6
+            ["M"] = 0,
+            ["T"] = 1,
+            ["W"] = 2,
+            ["TH"] = 3,
+            ["F"] = 4,
+            ["S"] = 5,
+            ["SU"] = 6,
         };
 
-        private static readonly string[] DayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        private static readonly string[] DayNames =
+        [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ];
 
         private static readonly string[] TimeLabels =
         [
-            "7:30 AM", "8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-            "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM",
-            "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM"
+            "7:30 AM",
+            "8:00 AM",
+            "8:30 AM",
+            "9:00 AM",
+            "9:30 AM",
+            "10:00 AM",
+            "10:30 AM",
+            "11:00 AM",
+            "11:30 AM",
+            "12:00 PM",
+            "12:30 PM",
+            "1:00 PM",
+            "1:30 PM",
+            "2:00 PM",
+            "2:30 PM",
+            "3:00 PM",
+            "3:30 PM",
+            "4:00 PM",
+            "4:30 PM",
+            "5:00 PM",
+            "5:30 PM",
+            "6:00 PM",
+            "6:30 PM",
+            "7:00 PM",
+            "7:30 PM",
+            "8:00 PM",
+            "8:30 PM",
         ];
 
         private const int TimeLabelWidth = 80;
@@ -632,33 +742,86 @@ namespace wildcat_one_windows
 
         private static readonly Color[] PastelColors =
         [
-            Color.FromArgb(255, 179, 186), Color.FromArgb(255, 223, 186), Color.FromArgb(255, 255, 186),
-            Color.FromArgb(186, 255, 201), Color.FromArgb(186, 225, 255), Color.FromArgb(218, 186, 255),
-            Color.FromArgb(255, 186, 255), Color.FromArgb(186, 255, 255), Color.FromArgb(255, 204, 204),
-            Color.FromArgb(255, 229, 204), Color.FromArgb(255, 255, 204), Color.FromArgb(204, 255, 204),
-            Color.FromArgb(204, 229, 255), Color.FromArgb(229, 204, 255), Color.FromArgb(255, 204, 229),
-            Color.FromArgb(204, 255, 229), Color.FromArgb(255, 218, 185), Color.FromArgb(230, 230, 250),
-            Color.FromArgb(255, 228, 225), Color.FromArgb(240, 255, 240), Color.FromArgb(245, 245, 220),
-            Color.FromArgb(255, 250, 205), Color.FromArgb(250, 250, 210), Color.FromArgb(255, 239, 213),
-            Color.FromArgb(253, 245, 230), Color.FromArgb(255, 245, 238), Color.FromArgb(245, 255, 250),
-            Color.FromArgb(240, 248, 255), Color.FromArgb(248, 248, 255), Color.FromArgb(255, 240, 245),
-            Color.FromArgb(255, 228, 196), Color.FromArgb(255, 235, 205), Color.FromArgb(255, 248, 220),
-            Color.FromArgb(224, 255, 255), Color.FromArgb(230, 230, 250), Color.FromArgb(255, 240, 245),
-            Color.FromArgb(250, 235, 215), Color.FromArgb(245, 222, 179), Color.FromArgb(255, 222, 173),
-            Color.FromArgb(255, 218, 185), Color.FromArgb(238, 232, 170), Color.FromArgb(152, 251, 152),
-            Color.FromArgb(175, 238, 238), Color.FromArgb(176, 224, 230), Color.FromArgb(173, 216, 230),
-            Color.FromArgb(135, 206, 250), Color.FromArgb(176, 196, 222), Color.FromArgb(216, 191, 216),
-            Color.FromArgb(221, 160, 221), Color.FromArgb(238, 130, 238), Color.FromArgb(255, 182, 193),
-            Color.FromArgb(255, 192, 203), Color.FromArgb(219, 112, 147), Color.FromArgb(255, 160, 122),
-            Color.FromArgb(250, 128, 114), Color.FromArgb(233, 150, 122), Color.FromArgb(240, 128, 128),
-            Color.FromArgb(205, 92, 92), Color.FromArgb(188, 143, 143), Color.FromArgb(210, 180, 140),
-            Color.FromArgb(222, 184, 135), Color.FromArgb(244, 164, 96), Color.FromArgb(218, 165, 32),
-            Color.FromArgb(189, 183, 107), Color.FromArgb(144, 238, 144), Color.FromArgb(143, 188, 143),
-            Color.FromArgb(102, 205, 170), Color.FromArgb(127, 255, 212), Color.FromArgb(0, 250, 154),
-            Color.FromArgb(72, 209, 204), Color.FromArgb(64, 224, 208), Color.FromArgb(0, 206, 209),
-            Color.FromArgb(100, 149, 237), Color.FromArgb(106, 90, 205), Color.FromArgb(123, 104, 238),
-            Color.FromArgb(147, 112, 219), Color.FromArgb(186, 85, 211), Color.FromArgb(218, 112, 214),
-            Color.FromArgb(199, 21, 133), Color.FromArgb(219, 112, 147)
+            Color.FromArgb(255, 179, 186),
+            Color.FromArgb(255, 223, 186),
+            Color.FromArgb(255, 255, 186),
+            Color.FromArgb(186, 255, 201),
+            Color.FromArgb(186, 225, 255),
+            Color.FromArgb(218, 186, 255),
+            Color.FromArgb(255, 186, 255),
+            Color.FromArgb(186, 255, 255),
+            Color.FromArgb(255, 204, 204),
+            Color.FromArgb(255, 229, 204),
+            Color.FromArgb(255, 255, 204),
+            Color.FromArgb(204, 255, 204),
+            Color.FromArgb(204, 229, 255),
+            Color.FromArgb(229, 204, 255),
+            Color.FromArgb(255, 204, 229),
+            Color.FromArgb(204, 255, 229),
+            Color.FromArgb(255, 218, 185),
+            Color.FromArgb(230, 230, 250),
+            Color.FromArgb(255, 228, 225),
+            Color.FromArgb(240, 255, 240),
+            Color.FromArgb(245, 245, 220),
+            Color.FromArgb(255, 250, 205),
+            Color.FromArgb(250, 250, 210),
+            Color.FromArgb(255, 239, 213),
+            Color.FromArgb(253, 245, 230),
+            Color.FromArgb(255, 245, 238),
+            Color.FromArgb(245, 255, 250),
+            Color.FromArgb(240, 248, 255),
+            Color.FromArgb(248, 248, 255),
+            Color.FromArgb(255, 240, 245),
+            Color.FromArgb(255, 228, 196),
+            Color.FromArgb(255, 235, 205),
+            Color.FromArgb(255, 248, 220),
+            Color.FromArgb(224, 255, 255),
+            Color.FromArgb(230, 230, 250),
+            Color.FromArgb(255, 240, 245),
+            Color.FromArgb(250, 235, 215),
+            Color.FromArgb(245, 222, 179),
+            Color.FromArgb(255, 222, 173),
+            Color.FromArgb(255, 218, 185),
+            Color.FromArgb(238, 232, 170),
+            Color.FromArgb(152, 251, 152),
+            Color.FromArgb(175, 238, 238),
+            Color.FromArgb(176, 224, 230),
+            Color.FromArgb(173, 216, 230),
+            Color.FromArgb(135, 206, 250),
+            Color.FromArgb(176, 196, 222),
+            Color.FromArgb(216, 191, 216),
+            Color.FromArgb(221, 160, 221),
+            Color.FromArgb(238, 130, 238),
+            Color.FromArgb(255, 182, 193),
+            Color.FromArgb(255, 192, 203),
+            Color.FromArgb(219, 112, 147),
+            Color.FromArgb(255, 160, 122),
+            Color.FromArgb(250, 128, 114),
+            Color.FromArgb(233, 150, 122),
+            Color.FromArgb(240, 128, 128),
+            Color.FromArgb(205, 92, 92),
+            Color.FromArgb(188, 143, 143),
+            Color.FromArgb(210, 180, 140),
+            Color.FromArgb(222, 184, 135),
+            Color.FromArgb(244, 164, 96),
+            Color.FromArgb(218, 165, 32),
+            Color.FromArgb(189, 183, 107),
+            Color.FromArgb(144, 238, 144),
+            Color.FromArgb(143, 188, 143),
+            Color.FromArgb(102, 205, 170),
+            Color.FromArgb(127, 255, 212),
+            Color.FromArgb(0, 250, 154),
+            Color.FromArgb(72, 209, 204),
+            Color.FromArgb(64, 224, 208),
+            Color.FromArgb(0, 206, 209),
+            Color.FromArgb(100, 149, 237),
+            Color.FromArgb(106, 90, 205),
+            Color.FromArgb(123, 104, 238),
+            Color.FromArgb(147, 112, 219),
+            Color.FromArgb(186, 85, 211),
+            Color.FromArgb(218, 112, 214),
+            Color.FromArgb(199, 21, 133),
+            Color.FromArgb(219, 112, 147),
         ];
 
         private static int HashString(string str)
@@ -706,7 +869,11 @@ namespace wildcat_one_windows
             {
                 var x = TimeLabelWidth + i * dayColWidth;
                 var rect = new RectangleF(x, 0, dayColWidth, HeaderHeight);
-                using var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                using var sf = new StringFormat
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Center,
+                };
                 g.DrawString(DayNames[i], headerFont, headerTextBrush, rect, sf);
             }
 
@@ -717,7 +884,11 @@ namespace wildcat_one_windows
             {
                 var y = HeaderHeight + i * SlotHeight;
                 var rect = new RectangleF(2, y, TimeLabelWidth - 6, SlotHeight);
-                using var sf = new StringFormat { Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Near };
+                using var sf = new StringFormat
+                {
+                    Alignment = StringAlignment.Far,
+                    LineAlignment = StringAlignment.Near,
+                };
                 g.DrawString(TimeLabels[i], timeFont, timeBrush, rect, sf);
             }
 
@@ -758,7 +929,10 @@ namespace wildcat_one_windows
                     var instructor = TryGetString(course, "instructor") ?? "";
                     var color = GetCourseColor(courseCode);
 
-                    if (!course.TryGetProperty("schedule", out var schedArr) || schedArr.ValueKind != JsonValueKind.Array)
+                    if (
+                        !course.TryGetProperty("schedule", out var schedArr)
+                        || schedArr.ValueKind != JsonValueKind.Array
+                    )
                         continue;
 
                     foreach (var sched in schedArr.EnumerateArray())
@@ -767,31 +941,47 @@ namespace wildcat_one_windows
                         var timeTo = TryGetString(sched, "timeTo") ?? "";
                         var roomName = TryGetString(sched, "roomName") ?? "";
 
-                        if (!sched.TryGetProperty("day", out var dayArr) || dayArr.ValueKind != JsonValueKind.Array)
+                        if (
+                            !sched.TryGetProperty("day", out var dayArr)
+                            || dayArr.ValueKind != JsonValueKind.Array
+                        )
                             continue;
 
                         var startMins = GetMinutesFrom7AM(timeFrom);
                         var endMins = GetMinutesFrom7AM(timeTo);
                         var durationMins = endMins - startMins;
-                        if (durationMins <= 0) continue;
+                        if (durationMins <= 0)
+                            continue;
 
                         // Position calculation: minutes from 7:30 AM
                         var minsFrom730 = startMins - 30;
-                        if (minsFrom730 < 0) continue;
+                        if (minsFrom730 < 0)
+                            continue;
 
                         var yPos = HeaderHeight + (minsFrom730 / 30.0) * SlotHeight;
                         var blockHeight = (durationMins / 30.0) * SlotHeight - 6;
-                        if (blockHeight < 10) blockHeight = 10;
+                        if (blockHeight < 10)
+                            blockHeight = 10;
 
                         foreach (var dayEl in dayArr.EnumerateArray())
                         {
-                            var dayCode = dayEl.TryGetProperty("code", out var dc) ? dc.GetString() : null;
-                            if (dayCode is null || !DayCodeMap.TryGetValue(dayCode, out var dayIndex))
+                            var dayCode = dayEl.TryGetProperty("code", out var dc)
+                                ? dc.GetString()
+                                : null;
+                            if (
+                                dayCode is null
+                                || !DayCodeMap.TryGetValue(dayCode, out var dayIndex)
+                            )
                                 continue;
 
                             var xPos = TimeLabelWidth + dayIndex * dayColWidth + 2;
                             var blockWidth = dayColWidth - 4;
-                            var blockRect = new RectangleF(xPos, (float)yPos, blockWidth, (float)blockHeight);
+                            var blockRect = new RectangleF(
+                                xPos,
+                                (float)yPos,
+                                blockWidth,
+                                (float)blockHeight
+                            );
 
                             // Fill block
                             using var blockBrush = new SolidBrush(color);
@@ -804,31 +994,82 @@ namespace wildcat_one_windows
                             g.DrawPath(borderPen2, blockPath);
 
                             // Draw text inside block (NoClip prevents descender clipping on g, p, y, etc.)
-                            using var textSf = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.NoClip };
+                            using var textSf = new StringFormat
+                            {
+                                Trimming = StringTrimming.EllipsisCharacter,
+                                FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.NoClip,
+                            };
 
-                            var line1Rect = new RectangleF(xPos + 4, (float)yPos + 2, blockWidth - 8, 16);
+                            var line1Rect = new RectangleF(
+                                xPos + 4,
+                                (float)yPos + 2,
+                                blockWidth - 8,
+                                16
+                            );
                             g.DrawString(courseCode, blockFont, blockTextBrush, line1Rect, textSf);
 
                             if (blockHeight > 30)
                             {
-                                var line2Rect = new RectangleF(xPos + 4, (float)yPos + 16, blockWidth - 8, 15);
-                                g.DrawString(section, blockDetailFont, blockTextBrush, line2Rect, textSf);
+                                var line2Rect = new RectangleF(
+                                    xPos + 4,
+                                    (float)yPos + 16,
+                                    blockWidth - 8,
+                                    15
+                                );
+                                g.DrawString(
+                                    section,
+                                    blockDetailFont,
+                                    blockTextBrush,
+                                    line2Rect,
+                                    textSf
+                                );
                             }
                             if (blockHeight > 44)
                             {
-                                var line3Rect = new RectangleF(xPos + 4, (float)yPos + 30, blockWidth - 8, 15);
-                                g.DrawString(description, blockDetailFont, blockTextBrush, line3Rect, textSf);
+                                var line3Rect = new RectangleF(
+                                    xPos + 4,
+                                    (float)yPos + 30,
+                                    blockWidth - 8,
+                                    15
+                                );
+                                g.DrawString(
+                                    description,
+                                    blockDetailFont,
+                                    blockTextBrush,
+                                    line3Rect,
+                                    textSf
+                                );
                             }
                             if (blockHeight > 58)
                             {
-                                var line4Rect = new RectangleF(xPos + 4, (float)yPos + 44, blockWidth - 8, 15);
-                                g.DrawString(roomName, blockDetailFont, blockTextBrush, line4Rect, textSf);
+                                var line4Rect = new RectangleF(
+                                    xPos + 4,
+                                    (float)yPos + 44,
+                                    blockWidth - 8,
+                                    15
+                                );
+                                g.DrawString(
+                                    roomName,
+                                    blockDetailFont,
+                                    blockTextBrush,
+                                    line4Rect,
+                                    textSf
+                                );
                             }
 
                             // Store block for hit testing
-                            newBlocks.Add(new ScheduleBlock(
-                                blockRect, courseCode, description, section, instructor,
-                                timeFrom, timeTo, roomName));
+                            newBlocks.Add(
+                                new ScheduleBlock(
+                                    blockRect,
+                                    courseCode,
+                                    description,
+                                    section,
+                                    instructor,
+                                    timeFrom,
+                                    timeTo,
+                                    roomName
+                                )
+                            );
                         }
                     }
                 }
@@ -837,7 +1078,10 @@ namespace wildcat_one_windows
             _scheduleBlocks = newBlocks;
         }
 
-        private static System.Drawing.Drawing2D.GraphicsPath CreateRoundedRect(RectangleF rect, float radius)
+        private static System.Drawing.Drawing2D.GraphicsPath CreateRoundedRect(
+            RectangleF rect,
+            float radius
+        )
         {
             var path = new System.Drawing.Drawing2D.GraphicsPath();
             var diameter = radius * 2;
@@ -861,12 +1105,14 @@ namespace wildcat_one_windows
                 }
             }
 
-            if (hit == _hoveredBlock) return;
+            if (hit == _hoveredBlock)
+                return;
             _hoveredBlock = hit;
 
             if (hit is not null)
             {
-                var tip = $"{hit.CourseCode} - {hit.Section}\n{hit.Description}\n{hit.Instructor}\n{hit.TimeFrom} - {hit.TimeTo}\nRoom: {hit.RoomName}";
+                var tip =
+                    $"{hit.CourseCode} - {hit.Section}\n{hit.Description}\n{hit.Instructor}\n{hit.TimeFrom} - {hit.TimeTo}\nRoom: {hit.RoomName}";
                 _gridTooltip.SetToolTip(scheduleGridPanel, tip);
                 scheduleGridPanel.Cursor = Cursors.Hand;
             }
@@ -934,9 +1180,11 @@ namespace wildcat_one_windows
 
         private void GradesSemesterComboBox_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (!gradesSemesterComboBox.Enabled || _gradeEnrollments.Count == 0) return;
+            if (!gradesSemesterComboBox.Enabled || _gradeEnrollments.Count == 0)
+                return;
             var idx = gradesSemesterComboBox.SelectedIndex;
-            if (idx < 0 || idx >= _gradeEnrollments.Count) return;
+            if (idx < 0 || idx >= _gradeEnrollments.Count)
+                return;
 
             var enrollment = _gradeEnrollments[idx];
 
@@ -961,7 +1209,8 @@ namespace wildcat_one_windows
                     gwaText = $"  |  GWA: {gwa:F2}";
             }
 
-            gradesSemesterInfoLabel.Text = $"School Year: {academicYear}  |  Semester: {term}  |  Year Level: {yearLevel}  |  Status: {status}{gwaText}";
+            gradesSemesterInfoLabel.Text =
+                $"School Year: {academicYear}  |  Semester: {term}  |  Year Level: {yearLevel}  |  Status: {status}{gwaText}";
 
             // Get courses from enrollment
             PopulateGradesTable(enrollment);
@@ -975,14 +1224,18 @@ namespace wildcat_one_windows
             JsonElement courses = default;
             bool hasCourses = false;
 
-            if (enrollment.TryGetProperty("enrolledCourseGradeDetails", out var ecgd)
-                && ecgd.ValueKind == JsonValueKind.Array)
+            if (
+                enrollment.TryGetProperty("enrolledCourseGradeDetails", out var ecgd)
+                && ecgd.ValueKind == JsonValueKind.Array
+            )
             {
                 courses = ecgd;
                 hasCourses = true;
             }
-            else if (enrollment.TryGetProperty("studentGradeHistoryData", out var sghd)
-                     && sghd.ValueKind == JsonValueKind.Array)
+            else if (
+                enrollment.TryGetProperty("studentGradeHistoryData", out var sghd)
+                && sghd.ValueKind == JsonValueKind.Array
+            )
             {
                 courses = sghd;
                 hasCourses = true;
@@ -1002,15 +1255,19 @@ namespace wildcat_one_windows
             foreach (var course in courses.EnumerateArray())
             {
                 var courseCode = TryGetString(course, "courseCode") ?? "N/A";
-                var courseTitle = TryGetString(course, "courseTitle")
-                                 ?? TryGetString(course, "description")
-                                 ?? "N/A";
+                var courseTitle =
+                    TryGetString(course, "courseTitle")
+                    ?? TryGetString(course, "description")
+                    ?? "N/A";
                 var professor = TryGetString(course, "professor") ?? "No instructor assigned";
                 var units = "-";
                 if (course.TryGetProperty("units", out var unitsProp))
                 {
                     if (double.TryParse(unitsProp.ToString(), out var unitsVal))
-                        units = unitsVal == Math.Floor(unitsVal) ? ((int)unitsVal).ToString() : unitsVal.ToString("F1");
+                        units =
+                            unitsVal == Math.Floor(unitsVal)
+                                ? ((int)unitsVal).ToString()
+                                : unitsVal.ToString("F1");
                     else
                         units = unitsProp.ToString();
                 }
@@ -1021,15 +1278,18 @@ namespace wildcat_one_windows
                 var gradeStatus = "-";
 
                 // Check gradeDetails array
-                bool hasGradeDetails = course.TryGetProperty("gradeDetails", out var gradeDetails)
+                bool hasGradeDetails =
+                    course.TryGetProperty("gradeDetails", out var gradeDetails)
                     && gradeDetails.ValueKind == JsonValueKind.Array
                     && gradeDetails.GetArrayLength() > 0;
 
                 // gradeDetailFinal fallback
                 string? gradeDetailFinalGrade = null;
                 string? gradeDetailFinalStatus = null;
-                if (course.TryGetProperty("gradeDetailFinal", out var gdf)
-                    && gdf.ValueKind == JsonValueKind.Object)
+                if (
+                    course.TryGetProperty("gradeDetailFinal", out var gdf)
+                    && gdf.ValueKind == JsonValueKind.Object
+                )
                 {
                     gradeDetailFinalGrade = FormatGrade(TryGetString(gdf, "grade"));
                     gradeDetailFinalStatus = TryGetString(gdf, "gradeStatus");
@@ -1056,37 +1316,47 @@ namespace wildcat_one_windows
                     final_ = gradeDetailFinalGrade ?? "-";
                 }
 
-                gradeStatus = gradeDetailFinalStatus
-                              ?? TryGetString(course, "remarks")
-                              ?? "-";
+                gradeStatus = gradeDetailFinalStatus ?? TryGetString(course, "remarks") ?? "-";
 
                 // Course title + professor on two lines
                 var displayTitle = $"{courseTitle}\n{professor}";
 
-                gradesDataGridView.Rows.Add(courseCode, displayTitle, units, midterm, final_, gradeStatus);
+                gradesDataGridView.Rows.Add(
+                    courseCode,
+                    displayTitle,
+                    units,
+                    midterm,
+                    final_,
+                    gradeStatus
+                );
             }
         }
 
-        private void GradesDataGridView_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        private void GradesDataGridView_CellFormatting(
+            object? sender,
+            DataGridViewCellFormattingEventArgs e
+        )
         {
             // Apply color coding to Midterm (index 3) and Final (index 4) columns
-            if (e.ColumnIndex != 3 && e.ColumnIndex != 4) return;
+            if (e.ColumnIndex != 3 && e.ColumnIndex != 4)
+                return;
             if (e.Value is not string gradeStr || string.IsNullOrEmpty(gradeStr) || gradeStr == "-")
                 return;
 
-            if (!double.TryParse(gradeStr, out var grade)) return;
+            if (!double.TryParse(gradeStr, out var grade))
+                return;
 
             Color gradeColor;
             if (grade >= 4.5)
-                gradeColor = Color.FromArgb(39, 174, 96);      // green - Excellent
+                gradeColor = Color.FromArgb(39, 174, 96); // green - Excellent
             else if (grade >= 4.0)
-                gradeColor = Color.FromArgb(46, 204, 113);     // light green - Good
+                gradeColor = Color.FromArgb(46, 204, 113); // light green - Good
             else if (grade >= 3.0)
-                gradeColor = Color.FromArgb(243, 156, 18);     // orange - Average
+                gradeColor = Color.FromArgb(243, 156, 18); // orange - Average
             else if (grade >= 2.0)
-                gradeColor = Color.FromArgb(230, 126, 34);     // dark orange - Poor
+                gradeColor = Color.FromArgb(230, 126, 34); // dark orange - Poor
             else
-                gradeColor = Color.FromArgb(231, 76, 60);      // red - Failing
+                gradeColor = Color.FromArgb(231, 76, 60); // red - Failing
 
             e.CellStyle!.ForeColor = gradeColor;
             e.CellStyle.SelectionForeColor = gradeColor;
@@ -1194,7 +1464,10 @@ namespace wildcat_one_windows
                 else
                 {
                     var msg = "An error occurred. Please try again.";
-                    if (result.Data.ValueKind == JsonValueKind.Object && result.Data.TryGetProperty("message", out var msgProp))
+                    if (
+                        result.Data.ValueKind == JsonValueKind.Object
+                        && result.Data.TryGetProperty("message", out var msgProp)
+                    )
                         msg = msgProp.GetString() ?? msg;
                     CpShowError(msg);
                 }
@@ -1286,7 +1559,11 @@ namespace wildcat_one_windows
 
             try
             {
-                var result = await ChangePasswordService.SubmitPasswordChangeAsync(otp, _cpStoredOldPassword, _cpStoredNewPassword);
+                var result = await ChangePasswordService.SubmitPasswordChangeAsync(
+                    otp,
+                    _cpStoredOldPassword,
+                    _cpStoredNewPassword
+                );
 
                 if (result.Status == 200)
                 {
@@ -1301,7 +1578,10 @@ namespace wildcat_one_windows
                 else
                 {
                     var msg = "Failed to change password. Please try again.";
-                    if (result.Data.ValueKind == JsonValueKind.Object && result.Data.TryGetProperty("message", out var msgProp))
+                    if (
+                        result.Data.ValueKind == JsonValueKind.Object
+                        && result.Data.TryGetProperty("message", out var msgProp)
+                    )
                         msg = msgProp.GetString() ?? msg;
                     CpShowError(msg);
                 }
@@ -1359,20 +1639,25 @@ namespace wildcat_one_windows
 
         private void CpToggleOldPassword_Click(object? sender, EventArgs e)
         {
-            cpOldPasswordTextBox.UseSystemPasswordChar = !cpOldPasswordTextBox.UseSystemPasswordChar;
+            cpOldPasswordTextBox.UseSystemPasswordChar =
+                !cpOldPasswordTextBox.UseSystemPasswordChar;
             cpToggleOldPassword.Text = cpOldPasswordTextBox.UseSystemPasswordChar ? "SHOW" : "HIDE";
         }
 
         private void CpToggleNewPassword_Click(object? sender, EventArgs e)
         {
-            cpNewPasswordTextBox.UseSystemPasswordChar = !cpNewPasswordTextBox.UseSystemPasswordChar;
+            cpNewPasswordTextBox.UseSystemPasswordChar =
+                !cpNewPasswordTextBox.UseSystemPasswordChar;
             cpToggleNewPassword.Text = cpNewPasswordTextBox.UseSystemPasswordChar ? "SHOW" : "HIDE";
         }
 
         private void CpToggleConfirmPassword_Click(object? sender, EventArgs e)
         {
-            cpConfirmPasswordTextBox.UseSystemPasswordChar = !cpConfirmPasswordTextBox.UseSystemPasswordChar;
-            cpToggleConfirmPassword.Text = cpConfirmPasswordTextBox.UseSystemPasswordChar ? "SHOW" : "HIDE";
+            cpConfirmPasswordTextBox.UseSystemPasswordChar =
+                !cpConfirmPasswordTextBox.UseSystemPasswordChar;
+            cpToggleConfirmPassword.Text = cpConfirmPasswordTextBox.UseSystemPasswordChar
+                ? "SHOW"
+                : "HIDE";
         }
 
         private void CpOtpTextBox_KeyPress(object? sender, KeyPressEventArgs e)
@@ -1396,14 +1681,16 @@ namespace wildcat_one_windows
 
         private void CpErrorPanel_Paint(object? sender, PaintEventArgs e)
         {
-            if (sender is not Panel panel) return;
+            if (sender is not Panel panel)
+                return;
             using var brush = new SolidBrush(Color.FromArgb(231, 76, 60));
             e.Graphics.FillRectangle(brush, 0, 0, 4, panel.Height);
         }
 
         private void CpSuccessPanel_Paint(object? sender, PaintEventArgs e)
         {
-            if (sender is not Panel panel) return;
+            if (sender is not Panel panel)
+                return;
             using var brush = new SolidBrush(Color.FromArgb(39, 174, 96));
             e.Graphics.FillRectangle(brush, 0, 0, 4, panel.Height);
         }
@@ -1418,9 +1705,11 @@ namespace wildcat_one_windows
                 "Are you sure you want to logout?",
                 "Confirm Logout",
                 MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
+                MessageBoxIcon.Question
+            );
 
-            if (result != DialogResult.Yes) return;
+            if (result != DialogResult.Yes)
+                return;
 
             AuthService.Logout();
             var loginForm = new LoginForm();
@@ -1435,14 +1724,16 @@ namespace wildcat_one_windows
 
         private void StatCard_Paint(object? sender, PaintEventArgs e)
         {
-            if (sender is not Panel panel) return;
+            if (sender is not Panel panel)
+                return;
             using var brush = new SolidBrush(Color.FromArgb(122, 26, 61));
             e.Graphics.FillRectangle(brush, 0, 0, panel.Width, 4);
         }
 
         private void ClassCard_Paint(object? sender, PaintEventArgs e)
         {
-            if (sender is not Panel panel) return;
+            if (sender is not Panel panel)
+                return;
             using var brush = new SolidBrush(Color.FromArgb(122, 26, 61));
             e.Graphics.FillRectangle(brush, 0, 0, 4, panel.Height);
         }
@@ -1458,7 +1749,8 @@ namespace wildcat_one_windows
         string Instructor,
         string TimeFrom,
         string TimeTo,
-        string RoomName);
+        string RoomName
+    );
 
     internal class DoubleBufferedPanel : Panel
     {
@@ -1466,10 +1758,11 @@ namespace wildcat_one_windows
         {
             DoubleBuffered = true;
             SetStyle(
-                ControlStyles.AllPaintingInWmPaint |
-                ControlStyles.UserPaint |
-                ControlStyles.OptimizedDoubleBuffer,
-                true);
+                ControlStyles.AllPaintingInWmPaint
+                    | ControlStyles.UserPaint
+                    | ControlStyles.OptimizedDoubleBuffer,
+                true
+            );
         }
     }
 }

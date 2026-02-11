@@ -133,7 +133,7 @@ namespace wildcat_one_windows
             passwordTextBox.BorderStyle = BorderStyle.FixedSingle;
             passwordTextBox.UseSystemPasswordChar = true;
             passwordTextBox.PlaceholderText = "Enter your password";
-            passwordTextBox.Text = "Atabotabo#9587"; // DEV: pre-fill for convenience
+            passwordTextBox.Text = "adriri"; // DEV: pre-fill for convenience
             passwordTextBox.TextChanged += Input_TextChanged;
 
             // === Show/Hide Password Button ===

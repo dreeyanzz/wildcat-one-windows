@@ -20,20 +20,26 @@ public static class GradesService
         string? departmentId = null;
         if (studentInfo.Value.TryGetProperty("idDepartment", out var deptProp))
             departmentId = deptProp.ToString();
-        if (departmentId is null && studentInfo.Value.TryGetProperty("departmentId", out var deptProp2))
+        if (
+            departmentId is null
+            && studentInfo.Value.TryGetProperty("departmentId", out var deptProp2)
+        )
             departmentId = deptProp2.ToString();
 
         if (departmentId is null)
             return [];
 
         var result = await ApiService.GetAsync(
-            $"/api/studentgradefile/student/{studentId}/department/{departmentId}");
+            $"/api/studentgradefile/student/{studentId}/department/{departmentId}"
+        );
 
         if (!result.Success || !result.Data.TryGetProperty("items", out var items))
             return [];
 
-        if (!items.TryGetProperty("studentEnrollments", out var enrollments)
-            || enrollments.ValueKind != JsonValueKind.Array)
+        if (
+            !items.TryGetProperty("studentEnrollments", out var enrollments)
+            || enrollments.ValueKind != JsonValueKind.Array
+        )
             return [];
 
         return enrollments.EnumerateArray().ToList();

@@ -18,8 +18,11 @@ public static class ApiService
         Timeout = Timeout.InfiniteTimeSpan, // We handle timeout manually with CancellationTokenSource
         DefaultRequestHeaders =
         {
-            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
-        }
+            {
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+        },
     };
 
     public static async Task<ApiResponse> CallAsync(
@@ -27,7 +30,8 @@ public static class ApiService
         string endpoint,
         object? data = null,
         string? baseUrl = null,
-        ApiOptions? options = null)
+        ApiOptions? options = null
+    )
     {
         baseUrl ??= AppConfig.BASE_URL;
         options ??= new ApiOptions();
@@ -68,7 +72,11 @@ public static class ApiService
             if (string.IsNullOrWhiteSpace(responseText))
             {
                 if (!response.IsSuccessStatusCode)
-                    return new ApiResponse((int)response.StatusCode, CreateMessageElement(response.ReasonPhrase ?? "Error"), false);
+                    return new ApiResponse(
+                        (int)response.StatusCode,
+                        CreateMessageElement(response.ReasonPhrase ?? "Error"),
+                        false
+                    );
 
                 throw new ApiException("Empty response from server", (int)response.StatusCode);
             }
@@ -76,16 +84,27 @@ public static class ApiService
             JsonElement responseData;
             try
             {
-                responseData = contentType.Contains("text/plain", StringComparison.OrdinalIgnoreCase)
+                responseData = contentType.Contains(
+                    "text/plain",
+                    StringComparison.OrdinalIgnoreCase
+                )
                     ? CryptoHelper.DecryptPayload(responseText)
                     : JsonSerializer.Deserialize<JsonElement>(responseText);
             }
             catch (Exception parseError)
             {
                 if (!response.IsSuccessStatusCode)
-                    return new ApiResponse((int)response.StatusCode, CreateMessageElement(responseText), false);
+                    return new ApiResponse(
+                        (int)response.StatusCode,
+                        CreateMessageElement(responseText),
+                        false
+                    );
 
-                throw new ApiException("Failed to parse server response", (int)response.StatusCode, parseError);
+                throw new ApiException(
+                    "Failed to parse server response",
+                    (int)response.StatusCode,
+                    parseError
+                );
             }
 
             if ((int)response.StatusCode == 401 && !options.IsLoginRequest)
@@ -93,7 +112,11 @@ public static class ApiService
                 HandleTokenExpiration();
             }
 
-            return new ApiResponse((int)response.StatusCode, responseData, response.IsSuccessStatusCode);
+            return new ApiResponse(
+                (int)response.StatusCode,
+                responseData,
+                response.IsSuccessStatusCode
+            );
         }
         catch (ApiException)
         {
@@ -113,11 +136,15 @@ public static class ApiService
         }
     }
 
-    public static Task<ApiResponse> GetAsync(string endpoint, string? baseUrl = null)
-        => CallAsync(HttpMethod.Get, endpoint, null, baseUrl);
+    public static Task<ApiResponse> GetAsync(string endpoint, string? baseUrl = null) =>
+        CallAsync(HttpMethod.Get, endpoint, null, baseUrl);
 
-    public static Task<ApiResponse> PostAsync(string endpoint, object data, string? baseUrl = null, ApiOptions? options = null)
-        => CallAsync(HttpMethod.Post, endpoint, data, baseUrl, options);
+    public static Task<ApiResponse> PostAsync(
+        string endpoint,
+        object data,
+        string? baseUrl = null,
+        ApiOptions? options = null
+    ) => CallAsync(HttpMethod.Post, endpoint, data, baseUrl, options);
 
     private static void HandleTokenExpiration()
     {

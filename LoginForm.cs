@@ -42,7 +42,8 @@ namespace wildcat_one_windows
             {
                 var result = await AuthService.LoginAsync(
                     studentIdTextBox.Text.Trim(),
-                    passwordTextBox.Text);
+                    passwordTextBox.Text
+                );
 
                 var home = new Form1();
                 home.Show();
@@ -59,9 +60,11 @@ namespace wildcat_one_windows
             }
             catch (ApiException ex)
             {
-                ShowError(ex.StatusCode == 0
-                    ? "Network error. Please check your internet connection."
-                    : ex.Message);
+                ShowError(
+                    ex.StatusCode == 0
+                        ? "Network error. Please check your internet connection."
+                        : ex.Message
+                );
             }
             catch (Exception ex)
             {
@@ -84,7 +87,8 @@ namespace wildcat_one_windows
             {
                 var result = await AuthService.ForgotPasswordAsync(
                     studentIdTextBox.Text.Trim(),
-                    birthdatePicker.Value);
+                    birthdatePicker.Value
+                );
 
                 ShowSuccess(result.Message);
                 studentIdTextBox.Text = "";
@@ -100,9 +104,11 @@ namespace wildcat_one_windows
             }
             catch (ApiException ex)
             {
-                ShowError(ex.StatusCode == 0
-                    ? "Network error. Please check your internet connection."
-                    : ex.Message);
+                ShowError(
+                    ex.StatusCode == 0
+                        ? "Network error. Please check your internet connection."
+                        : ex.Message
+                );
             }
             catch (Exception ex)
             {
@@ -128,7 +134,8 @@ namespace wildcat_one_windows
             if (_isForgotPasswordMode)
             {
                 subtitleLabel.Text = "Reset Password";
-                descriptionLabel.Text = "Enter your Student ID and birthdate to reset your password";
+                descriptionLabel.Text =
+                    "Enter your Student ID and birthdate to reset your password";
 
                 passwordLabel.Visible = false;
                 passwordTextBox.Visible = false;

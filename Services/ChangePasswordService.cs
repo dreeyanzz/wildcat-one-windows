@@ -9,14 +9,25 @@ public static class ChangePasswordService
         return ApiService.PostAsync(
             "/api/usermaster/student/otp",
             new { oldPassword, newPassword },
-            AppConfig.LOGIN_URL);
+            AppConfig.LOGIN_URL
+        );
     }
 
-    public static Task<ApiResponse> SubmitPasswordChangeAsync(string otp, string oldPassword, string newPassword)
+    public static Task<ApiResponse> SubmitPasswordChangeAsync(
+        string otp,
+        string oldPassword,
+        string newPassword
+    )
     {
         return ApiService.PostAsync(
             "/api/usermaster/student/changepassword",
-            new { oneTimePassword = otp, oldPassword, newPassword },
-            AppConfig.LOGIN_URL);
+            new
+            {
+                oneTimePassword = otp,
+                oldPassword,
+                newPassword,
+            },
+            AppConfig.LOGIN_URL
+        );
     }
 }
