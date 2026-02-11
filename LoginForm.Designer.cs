@@ -113,6 +113,7 @@ namespace wildcat_one_windows
             studentIdTextBox.BackColor = Color.FromArgb(248, 249, 251); // #f8f9fb
             studentIdTextBox.BorderStyle = BorderStyle.FixedSingle;
             studentIdTextBox.PlaceholderText = "24-4339-705";
+            studentIdTextBox.Text = "24-4339-705"; // DEV: pre-fill for convenience
             studentIdTextBox.TextChanged += Input_TextChanged;
 
             // === Password Label ===
@@ -132,6 +133,7 @@ namespace wildcat_one_windows
             passwordTextBox.BorderStyle = BorderStyle.FixedSingle;
             passwordTextBox.UseSystemPasswordChar = true;
             passwordTextBox.PlaceholderText = "Enter your password";
+            passwordTextBox.Text = "Atabotabo#9587"; // DEV: pre-fill for convenience
             passwordTextBox.TextChanged += Input_TextChanged;
 
             // === Show/Hide Password Button ===
@@ -146,6 +148,44 @@ namespace wildcat_one_windows
             togglePasswordButton.Location = new Point(316, 326);
             togglePasswordButton.Cursor = Cursors.Hand;
             togglePasswordButton.Click += TogglePasswordButton_Click;
+
+            // === Birthdate Label (hidden by default) ===
+            birthdateLabel = new Label();
+            birthdateLabel.Text = "Birthdate";
+            birthdateLabel.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+            birthdateLabel.ForeColor = Color.FromArgb(52, 73, 94);
+            birthdateLabel.Location = new Point(30, 298);
+            birthdateLabel.AutoSize = true;
+            birthdateLabel.Visible = false;
+
+            // === Birthdate DateTimePicker (hidden by default) ===
+            birthdatePicker = new DateTimePicker();
+            birthdatePicker.Location = new Point(30, 322);
+            birthdatePicker.Size = new Size(340, 35);
+            birthdatePicker.Font = new Font("Segoe UI", 11F);
+            birthdatePicker.Format = DateTimePickerFormat.Long;
+            birthdatePicker.MaxDate = DateTime.Today;
+            birthdatePicker.Value = new DateTime(2000, 1, 1);
+            birthdatePicker.Visible = false;
+            birthdatePicker.ValueChanged += Input_TextChanged;
+
+            // === Success Panel (green, hidden by default) ===
+            successPanel = new Panel();
+            successPanel.Location = new Point(30, 218);
+            successPanel.Size = new Size(340, 0);
+            successPanel.BackColor = Color.FromArgb(239, 255, 239); // #efffef
+            successPanel.Visible = false;
+            successPanel.Paint += SuccessPanel_Paint;
+
+            // === Success Label ===
+            successLabel = new Label();
+            successLabel.Text = "";
+            successLabel.Font = new Font("Segoe UI", 9F);
+            successLabel.ForeColor = Color.FromArgb(39, 174, 96); // #27ae60
+            successLabel.Location = new Point(14, 8);
+            successLabel.Size = new Size(316, 32);
+            successLabel.AutoSize = false;
+            successPanel.Controls.Add(successLabel);
 
             // === Sign In Button ===
             signInButton = new Button();
@@ -186,6 +226,9 @@ namespace wildcat_one_windows
             cardPanel.Controls.Add(passwordLabel);
             cardPanel.Controls.Add(passwordTextBox);
             cardPanel.Controls.Add(togglePasswordButton);
+            cardPanel.Controls.Add(birthdateLabel);
+            cardPanel.Controls.Add(birthdatePicker);
+            cardPanel.Controls.Add(successPanel);
             cardPanel.Controls.Add(signInButton);
             cardPanel.Controls.Add(forgotPasswordLink);
 
@@ -216,6 +259,10 @@ namespace wildcat_one_windows
         private TextBox passwordTextBox;
         private Button togglePasswordButton;
         private Button signInButton;
+        private Label birthdateLabel;
+        private DateTimePicker birthdatePicker;
+        private Panel successPanel;
+        private Label successLabel;
         private LinkLabel forgotPasswordLink;
     }
 }
