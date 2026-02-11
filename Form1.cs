@@ -23,6 +23,10 @@ namespace wildcat_one_windows
         private List<JsonElement> _gradeEnrollments = [];
         private bool _gradesPageLoaded;
 
+        // Professors page state
+        private List<JsonElement> _profEnrollments = [];
+        private bool _professorsPageLoaded;
+
         // Course offerings page state
         private List<JsonElement> _coAllCourses = [];
         private List<JsonElement> _coFilteredCourses = [];
@@ -56,6 +60,10 @@ namespace wildcat_one_windows
             gradesSemesterComboBox.SelectedIndexChanged +=
                 GradesSemesterComboBox_SelectedIndexChanged;
             gradesDataGridView.CellFormatting += GradesDataGridView_CellFormatting;
+
+            // Wire professors page events
+            profSemesterComboBox.SelectedIndexChanged +=
+                ProfSemesterComboBox_SelectedIndexChanged;
 
             // Wire course offerings page events
             coSearchTextBox.TextChanged += CoSearchTextBox_TextChanged;
@@ -485,15 +493,12 @@ namespace wildcat_one_windows
                 await LoadGradesPageAsync();
         }
 
-        private void BtnProfessors_Click(object? sender, EventArgs e)
+        private async void BtnProfessors_Click(object? sender, EventArgs e)
         {
             SetActiveSidebarButton(btnProfessors);
-            MessageBox.Show(
-                "Coming soon!",
-                "Professors",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
+            ShowPage("professors");
+            if (!_professorsPageLoaded)
+                await LoadProfessorsPageAsync();
         }
 
         private async void BtnCourseOfferings_Click(object? sender, EventArgs e)
@@ -600,6 +605,7 @@ namespace wildcat_one_windows
             dashboardPanel.Visible = page == "dashboard";
             schedulePagePanel.Visible = page == "schedule";
             gradesPagePanel.Visible = page == "grades";
+            professorsPagePanel.Visible = page == "professors";
             courseOfferingsPagePanel.Visible = page == "courseOfferings";
             changePasswordPagePanel.Visible = page == "changePassword";
         }
@@ -1375,6 +1381,131 @@ namespace wildcat_one_windows
             e.CellStyle!.ForeColor = gradeColor;
             e.CellStyle.SelectionForeColor = gradeColor;
             e.CellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        }
+
+        // ===========================================
+        // Professors Page
+        // ===========================================
+
+        private async Task LoadProfessorsPageAsync()
+        {
+            profSemesterComboBox.Items.Clear();
+            profSemesterComboBox.Items.Add("Loading semesters...");
+            profSemesterComboBox.SelectedIndex = 0;
+            profSemesterComboBox.Enabled = false;
+            profEmptyLabel.Visible = false;
+
+            try
+            {
+                _profEnrollments = await GradesService.FetchEnrollmentsAsync();
+
+                profSemesterComboBox.Items.Clear();
+
+                if (_profEnrollments.Count == 0)
+                {
+                    profSemesterComboBox.Items.Add("No semesters available");
+                    profSemesterComboBox.SelectedIndex = 0;
+                    profDataGridView.Rows.Clear();
+                    profEmptyLabel.Text = "No professor data available";
+                    profEmptyLabel.Visible = true;
+                    profTableContainer.Visible = false;
+                    _professorsPageLoaded = true;
+                    return;
+                }
+
+                foreach (var enrollment in _profEnrollments)
+                {
+                    var academicYear = TryGetString(enrollment, "academicYear") ?? "N/A";
+                    var term = TryGetString(enrollment, "term") ?? "N/A";
+                    var yearLevel = TryGetString(enrollment, "yearLevel") ?? "N/A";
+                    profSemesterComboBox.Items.Add($"{academicYear}: {term} ({yearLevel})");
+                }
+
+                profSemesterComboBox.Enabled = true;
+                profTableContainer.Visible = true;
+                profSemesterComboBox.SelectedIndex = 0; // triggers population
+                _professorsPageLoaded = true;
+            }
+            catch
+            {
+                profSemesterComboBox.Items.Clear();
+                profSemesterComboBox.Items.Add("Failed to load semesters");
+                profSemesterComboBox.SelectedIndex = 0;
+                profDataGridView.Rows.Clear();
+                profEmptyLabel.Text = "Failed to load professors. Please try again.";
+                profEmptyLabel.Visible = true;
+                profTableContainer.Visible = false;
+            }
+        }
+
+        private void ProfSemesterComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (!profSemesterComboBox.Enabled || _profEnrollments.Count == 0)
+                return;
+            var idx = profSemesterComboBox.SelectedIndex;
+            if (idx < 0 || idx >= _profEnrollments.Count)
+                return;
+
+            var enrollment = _profEnrollments[idx];
+
+            // Update semester info label
+            var academicYear = TryGetString(enrollment, "academicYear") ?? "N/A";
+            var term = TryGetString(enrollment, "term") ?? "N/A";
+            var yearLevel = TryGetString(enrollment, "yearLevel") ?? "N/A";
+
+            profSemesterInfoLabel.Text =
+                $"School Year: {academicYear}  |  Semester: {term}  |  Year Level: {yearLevel}";
+
+            PopulateProfessorsTable(enrollment);
+        }
+
+        private void PopulateProfessorsTable(JsonElement enrollment)
+        {
+            profDataGridView.Rows.Clear();
+
+            // Try enrolledCourseGradeDetails first, then studentGradeHistoryData
+            JsonElement courses = default;
+            bool hasCourses = false;
+
+            if (
+                enrollment.TryGetProperty("enrolledCourseGradeDetails", out var ecgd)
+                && ecgd.ValueKind == JsonValueKind.Array
+            )
+            {
+                courses = ecgd;
+                hasCourses = true;
+            }
+            else if (
+                enrollment.TryGetProperty("studentGradeHistoryData", out var sghd)
+                && sghd.ValueKind == JsonValueKind.Array
+            )
+            {
+                courses = sghd;
+                hasCourses = true;
+            }
+
+            if (!hasCourses || courses.GetArrayLength() == 0)
+            {
+                profEmptyLabel.Text = "No professor data available for this semester";
+                profEmptyLabel.Visible = true;
+                profTableContainer.Visible = false;
+                return;
+            }
+
+            profEmptyLabel.Visible = false;
+            profTableContainer.Visible = true;
+
+            foreach (var course in courses.EnumerateArray())
+            {
+                var courseCode = TryGetString(course, "courseCode") ?? "N/A";
+                var courseTitle =
+                    TryGetString(course, "courseTitle")
+                    ?? TryGetString(course, "description")
+                    ?? "N/A";
+                var professor = TryGetString(course, "professor") ?? "No instructor assigned";
+
+                profDataGridView.Rows.Add(courseCode, courseTitle, professor);
+            }
         }
 
         // ===========================================

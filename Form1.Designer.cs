@@ -505,6 +505,143 @@ namespace wildcat_one_windows
             gradesPagePanel.Controls.Add(gradesEmptyLabel);
 
             // ===========================================
+            // Professors Page Panel
+            // ===========================================
+            professorsPagePanel = new Panel();
+            professorsPagePanel.Location = new Point(0, 0);
+            professorsPagePanel.Size = new Size(contentWidth, contentHeight);
+            professorsPagePanel.BackColor = contentBg;
+            professorsPagePanel.Visible = false;
+
+            // --- Professors Header Panel ---
+            profHeaderPanel = new Panel();
+            profHeaderPanel.Location = new Point(20, 12);
+            profHeaderPanel.Size = new Size(840, 70);
+            profHeaderPanel.BackColor = Color.White;
+
+            profTitle = new Label();
+            profTitle.Text = "My Professors";
+            profTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            profTitle.ForeColor = Color.FromArgb(122, 26, 61);
+            profTitle.Location = new Point(18, 8);
+            profTitle.AutoSize = true;
+
+            profSemesterComboBox = new ComboBox();
+            profSemesterComboBox.Font = new Font("Segoe UI", 9.5F);
+            profSemesterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            profSemesterComboBox.Location = new Point(540, 12);
+            profSemesterComboBox.Size = new Size(280, 26);
+
+            profSemesterInfoLabel = new Label();
+            profSemesterInfoLabel.Text = "";
+            profSemesterInfoLabel.Font = new Font("Segoe UI", 9F);
+            profSemesterInfoLabel.ForeColor = Color.FromArgb(100, 100, 100);
+            profSemesterInfoLabel.Location = new Point(18, 44);
+            profSemesterInfoLabel.AutoSize = true;
+
+            profHeaderPanel.Controls.Add(profTitle);
+            profHeaderPanel.Controls.Add(profSemesterComboBox);
+            profHeaderPanel.Controls.Add(profSemesterInfoLabel);
+
+            // --- Professors Table Container (scrollable) ---
+            profTableContainer = new Panel();
+            profTableContainer.Location = new Point(20, 92);
+            profTableContainer.Size = new Size(840, contentHeight - 112);
+            profTableContainer.AutoScroll = true;
+            profTableContainer.BackColor = Color.White;
+
+            // --- Professors DataGridView ---
+            profDataGridView = new DataGridView();
+            profDataGridView.Dock = DockStyle.Fill;
+            profDataGridView.ReadOnly = true;
+            profDataGridView.AllowUserToAddRows = false;
+            profDataGridView.AllowUserToDeleteRows = false;
+            profDataGridView.AllowUserToResizeRows = false;
+            profDataGridView.RowHeadersVisible = false;
+            profDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            profDataGridView.MultiSelect = false;
+            profDataGridView.BorderStyle = BorderStyle.None;
+            profDataGridView.BackgroundColor = Color.White;
+            profDataGridView.GridColor = Color.FromArgb(230, 230, 230);
+            profDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            profDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            profDataGridView.RowTemplate.Height = 44;
+            profDataGridView.Font = new Font("Segoe UI", 9F);
+
+            // Header styling
+            profDataGridView.EnableHeadersVisualStyles = false;
+            profDataGridView.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(248, 249, 250),
+                ForeColor = Color.FromArgb(122, 26, 61),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                Padding = new Padding(8, 0, 0, 0),
+                SelectionBackColor = Color.FromArgb(248, 249, 250),
+                SelectionForeColor = Color.FromArgb(122, 26, 61)
+            };
+            profDataGridView.ColumnHeadersHeight = 40;
+            profDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            profDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+            // Row styling
+            profDataGridView.DefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.White,
+                ForeColor = Color.FromArgb(52, 73, 94),
+                SelectionBackColor = Color.FromArgb(240, 242, 245),
+                SelectionForeColor = Color.FromArgb(52, 73, 94),
+                Padding = new Padding(8, 0, 0, 0)
+            };
+            profDataGridView.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(250, 250, 252),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                SelectionBackColor = Color.FromArgb(240, 242, 245),
+                SelectionForeColor = Color.FromArgb(52, 73, 94),
+                Padding = new Padding(8, 0, 0, 0)
+            };
+
+            // Columns
+            var profColCourseCode = new DataGridViewTextBoxColumn
+            {
+                Name = "ProfCourseCode",
+                HeaderText = "Course Code",
+                Width = 120
+            };
+            var profColCourseTitle = new DataGridViewTextBoxColumn
+            {
+                Name = "ProfCourseTitle",
+                HeaderText = "Course Title",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            };
+            var profColProfessor = new DataGridViewTextBoxColumn
+            {
+                Name = "ProfProfessor",
+                HeaderText = "Professor",
+                Width = 300
+            };
+
+            profDataGridView.Columns.AddRange(profColCourseCode, profColCourseTitle, profColProfessor);
+
+            profTableContainer.Controls.Add(profDataGridView);
+
+            // --- Professors empty state label (hidden by default) ---
+            profEmptyLabel = new Label();
+            profEmptyLabel.Text = "No professor data available";
+            profEmptyLabel.Font = new Font("Segoe UI", 11F, FontStyle.Italic);
+            profEmptyLabel.ForeColor = Color.FromArgb(150, 150, 150);
+            profEmptyLabel.AutoSize = false;
+            profEmptyLabel.Size = new Size(840, 40);
+            profEmptyLabel.Location = new Point(20, 200);
+            profEmptyLabel.TextAlign = ContentAlignment.MiddleCenter;
+            profEmptyLabel.Visible = false;
+
+            professorsPagePanel.Controls.Add(profHeaderPanel);
+            professorsPagePanel.Controls.Add(profTableContainer);
+            professorsPagePanel.Controls.Add(profEmptyLabel);
+
+            // ===========================================
             // Change Password Page Panel
             // ===========================================
             var inputBg = Color.FromArgb(248, 249, 251);
@@ -1026,6 +1163,7 @@ namespace wildcat_one_windows
             contentPanel.Controls.Add(dashboardPanel);
             contentPanel.Controls.Add(schedulePagePanel);
             contentPanel.Controls.Add(gradesPagePanel);
+            contentPanel.Controls.Add(professorsPagePanel);
             contentPanel.Controls.Add(changePasswordPagePanel);
             contentPanel.Controls.Add(courseOfferingsPagePanel);
 
@@ -1160,6 +1298,16 @@ namespace wildcat_one_windows
         private Panel gradesTableContainer;
         private DataGridView gradesDataGridView;
         private Label gradesEmptyLabel;
+
+        // Professors page
+        private Panel professorsPagePanel;
+        private Panel profHeaderPanel;
+        private Label profTitle;
+        private ComboBox profSemesterComboBox;
+        private Label profSemesterInfoLabel;
+        private Panel profTableContainer;
+        private DataGridView profDataGridView;
+        private Label profEmptyLabel;
 
         // Course Offerings page
         private Panel courseOfferingsPagePanel;
