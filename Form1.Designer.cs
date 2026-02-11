@@ -189,12 +189,23 @@ namespace wildcat_one_windows
             // ===========================================
             // Content Panel
             // ===========================================
+            var contentWidth = 1100 - 220;
+            var contentHeight = 700 - menuStrip.Height;
+
             contentPanel = new Panel();
             contentPanel.Location = new Point(220, menuStrip.Height);
-            contentPanel.Size = new Size(1100 - 220, 700 - menuStrip.Height);
+            contentPanel.Size = new Size(contentWidth, contentHeight);
             contentPanel.BackColor = contentBg;
-            contentPanel.Padding = new Padding(20);
-            contentPanel.AutoScroll = true;
+
+            // ===========================================
+            // Dashboard Panel (wraps all dashboard controls)
+            // ===========================================
+            dashboardPanel = new Panel();
+            dashboardPanel.Location = new Point(0, 0);
+            dashboardPanel.Size = new Size(contentWidth, contentHeight);
+            dashboardPanel.BackColor = contentBg;
+            dashboardPanel.Padding = new Padding(20);
+            dashboardPanel.AutoScroll = true;
 
             // --- Welcome GroupBox ---
             welcomeGroupBox = new GroupBox();
@@ -269,10 +280,72 @@ namespace wildcat_one_windows
 
             todayGroupBox.Controls.Add(todayClassesPanel);
 
-            // Add content controls
-            contentPanel.Controls.Add(welcomeGroupBox);
-            contentPanel.Controls.Add(statsFlowPanel);
-            contentPanel.Controls.Add(todayGroupBox);
+            dashboardPanel.Controls.Add(welcomeGroupBox);
+            dashboardPanel.Controls.Add(statsFlowPanel);
+            dashboardPanel.Controls.Add(todayGroupBox);
+
+            // ===========================================
+            // Schedule Page Panel
+            // ===========================================
+            schedulePagePanel = new Panel();
+            schedulePagePanel.Location = new Point(0, 0);
+            schedulePagePanel.Size = new Size(contentWidth, contentHeight);
+            schedulePagePanel.BackColor = contentBg;
+            schedulePagePanel.Visible = false;
+
+            // --- Schedule Header Panel ---
+            scheduleHeaderPanel = new Panel();
+            scheduleHeaderPanel.Location = new Point(20, 12);
+            scheduleHeaderPanel.Size = new Size(840, 70);
+            scheduleHeaderPanel.BackColor = Color.White;
+
+            scheduleTitle = new Label();
+            scheduleTitle.Text = "My Class Schedule";
+            scheduleTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            scheduleTitle.ForeColor = Color.FromArgb(122, 26, 61);
+            scheduleTitle.Location = new Point(18, 8);
+            scheduleTitle.AutoSize = true;
+
+            semesterComboBox = new ComboBox();
+            semesterComboBox.Font = new Font("Segoe UI", 9.5F);
+            semesterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            semesterComboBox.Location = new Point(540, 12);
+            semesterComboBox.Size = new Size(280, 26);
+
+            semesterInfoLabel = new Label();
+            semesterInfoLabel.Text = "";
+            semesterInfoLabel.Font = new Font("Segoe UI", 9F);
+            semesterInfoLabel.ForeColor = Color.FromArgb(100, 100, 100);
+            semesterInfoLabel.Location = new Point(18, 44);
+            semesterInfoLabel.AutoSize = true;
+
+            scheduleHeaderPanel.Controls.Add(scheduleTitle);
+            scheduleHeaderPanel.Controls.Add(semesterComboBox);
+            scheduleHeaderPanel.Controls.Add(semesterInfoLabel);
+
+            // --- Schedule Grid Container (scrollable) ---
+            scheduleGridContainer = new Panel();
+            scheduleGridContainer.Location = new Point(20, 92);
+            scheduleGridContainer.Size = new Size(840, contentHeight - 112);
+            scheduleGridContainer.AutoScroll = true;
+            scheduleGridContainer.BackColor = Color.White;
+
+            // --- Schedule Grid Panel (custom painted, DoubleBuffered) ---
+            // 80px time labels + 7 * 108px day columns = 836px wide
+            // 36px header + 27 * 40px slots = 1116px tall
+            scheduleGridPanel = new DoubleBufferedPanel();
+            scheduleGridPanel.Location = new Point(0, 0);
+            scheduleGridPanel.Size = new Size(836, 1116);
+            scheduleGridPanel.BackColor = Color.White;
+
+            scheduleGridContainer.Controls.Add(scheduleGridPanel);
+
+            schedulePagePanel.Controls.Add(scheduleHeaderPanel);
+            schedulePagePanel.Controls.Add(scheduleGridContainer);
+
+            // Add both page panels to content panel
+            contentPanel.Controls.Add(dashboardPanel);
+            contentPanel.Controls.Add(schedulePagePanel);
 
             // ===========================================
             // Add all to form
@@ -311,9 +384,9 @@ namespace wildcat_one_windows
             valLabel.Text = value;
             valLabel.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
             valLabel.ForeColor = Color.FromArgb(122, 26, 61);
-            valLabel.Location = new Point(14, 18);
+            valLabel.Location = new Point(14, 14);
             valLabel.AutoSize = false;
-            valLabel.Size = new Size(170, 34);
+            valLabel.Size = new Size(170, 42);
             valLabel.AutoEllipsis = true;
             valLabel.Tag = "statValue";
 
@@ -321,7 +394,7 @@ namespace wildcat_one_windows
             descLabel.Text = label;
             descLabel.Font = new Font("Segoe UI", 9F);
             descLabel.ForeColor = Color.FromArgb(120, 120, 120);
-            descLabel.Location = new Point(14, 58);
+            descLabel.Location = new Point(14, 62);
             descLabel.AutoSize = true;
 
             card.Controls.Add(valLabel);
@@ -372,6 +445,9 @@ namespace wildcat_one_windows
 
         // Content
         private Panel contentPanel;
+
+        // Dashboard page
+        private Panel dashboardPanel;
         private GroupBox welcomeGroupBox;
         private Label welcomeNameLabel;
         private Label welcomeDetailsLabel;
@@ -383,5 +459,14 @@ namespace wildcat_one_windows
         private GroupBox todayGroupBox;
         private Panel todayClassesPanel;
         private Label noClassesLabel;
+
+        // Schedule page
+        private Panel schedulePagePanel;
+        private Panel scheduleHeaderPanel;
+        private Label scheduleTitle;
+        private ComboBox semesterComboBox;
+        private Label semesterInfoLabel;
+        private Panel scheduleGridContainer;
+        private DoubleBufferedPanel scheduleGridPanel;
     }
 }
