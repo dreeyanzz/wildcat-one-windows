@@ -126,32 +126,23 @@ namespace wildcat_one_windows
             sidebarSeparator.BackColor = Color.FromArgb(80, 255, 255, 255);
 
             // Navigation buttons
-            var navButtonY = 136;
-            var navButtonHeight = 42;
-            var navButtonWidth = 220;
-
-            btnDashboard = CreateSidebarButton("  Dashboard", navButtonY, maroon, maroonLight);
+            btnDashboard = CreateSidebarButton("  Dashboard", 136, maroon, maroonLight);
             btnDashboard.BackColor = maroonLight; // Active by default
             btnDashboard.Click += BtnDashboard_Click;
-            navButtonY += navButtonHeight;
 
-            btnSchedule = CreateSidebarButton("  Schedule", navButtonY, maroon, maroonLight);
+            btnSchedule = CreateSidebarButton("  Schedule", 178, maroon, maroonLight);
             btnSchedule.Click += BtnSchedule_Click;
-            navButtonY += navButtonHeight;
 
-            btnGrades = CreateSidebarButton("  Grades", navButtonY, maroon, maroonLight);
+            btnGrades = CreateSidebarButton("  Grades", 220, maroon, maroonLight);
             btnGrades.Click += BtnGrades_Click;
-            navButtonY += navButtonHeight;
 
-            btnProfessors = CreateSidebarButton("  Professors", navButtonY, maroon, maroonLight);
+            btnProfessors = CreateSidebarButton("  Professors", 262, maroon, maroonLight);
             btnProfessors.Click += BtnProfessors_Click;
-            navButtonY += navButtonHeight;
 
-            btnCourseOfferings = CreateSidebarButton("  Course Offerings", navButtonY, maroon, maroonLight);
+            btnCourseOfferings = CreateSidebarButton("  Course Offerings", 304, maroon, maroonLight);
             btnCourseOfferings.Click += BtnCourseOfferings_Click;
-            navButtonY += navButtonHeight;
 
-            btnChangePassword = CreateSidebarButton("  Change Password", navButtonY, maroon, maroonLight);
+            btnChangePassword = CreateSidebarButton("  Change Password", 346, maroon, maroonLight);
             btnChangePassword.Click += BtnChangePassword_Click;
 
             // Logout separator + button at bottom
@@ -167,7 +158,7 @@ namespace wildcat_one_windows
             btnLogout.FlatStyle = FlatStyle.Flat;
             btnLogout.FlatAppearance.BorderSize = 0;
             btnLogout.FlatAppearance.MouseOverBackColor = maroonLight;
-            btnLogout.Size = new Size(navButtonWidth, navButtonHeight);
+            btnLogout.Size = new Size(220, 42);
             btnLogout.TextAlign = ContentAlignment.MiddleLeft;
             btnLogout.Cursor = Cursors.Hand;
             btnLogout.Click += BtnLogout_Click;
