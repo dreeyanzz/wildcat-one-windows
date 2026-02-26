@@ -69,6 +69,22 @@ namespace wildcat_one_windows
             MainMenuStrip = menuStrip;
 
             // ===========================================
+            // ToolStrip (quick navigation bar)
+            // ===========================================
+            toolStrip = new ToolStrip();
+            toolStrip.BackColor = Color.WhiteSmoke;
+            toolStrip.Dock = DockStyle.None;
+            toolStrip.Location = new Point(0, menuStrip.Height);
+            toolStrip.Size = new Size(1100, 25);
+            toolStrip.GripStyle = ToolStripGripStyle.Hidden;
+            toolStrip.Items.Add(new ToolStripButton("Dashboard", null, (s, e) => BtnDashboard_Click(s, e)));
+            toolStrip.Items.Add(new ToolStripButton("Schedule", null, (s, e) => BtnSchedule_Click(s, e)));
+            toolStrip.Items.Add(new ToolStripButton("Grades", null, (s, e) => BtnGrades_Click(s, e)));
+            toolStrip.Items.Add(new ToolStripButton("Professors", null, (s, e) => BtnProfessors_Click(s, e)));
+            toolStrip.Items.Add(new ToolStripSeparator());
+            toolStrip.Items.Add(new ToolStripButton("Logout", null, (s, e) => BtnLogout_Click(s, e)));
+
+            // ===========================================
             // ContextMenuStrip (for class cards)
             // ===========================================
             classContextMenu = new ContextMenuStrip(components);
@@ -81,8 +97,8 @@ namespace wildcat_one_windows
             // Sidebar Panel
             // ===========================================
             sidebarPanel = new Panel();
-            sidebarPanel.Size = new Size(220, 700 - menuStrip.Height);
-            sidebarPanel.Location = new Point(0, menuStrip.Height);
+            sidebarPanel.Size = new Size(220, 700 - menuStrip.Height - 25);
+            sidebarPanel.Location = new Point(0, menuStrip.Height + 25);
             sidebarPanel.BackColor = maroon;
             sidebarPanel.Dock = DockStyle.None;
 
@@ -181,10 +197,10 @@ namespace wildcat_one_windows
             // Content Panel
             // ===========================================
             var contentWidth = 1100 - 220;
-            var contentHeight = 700 - menuStrip.Height;
+            var contentHeight = 700 - menuStrip.Height - 25;
 
             contentPanel = new Panel();
-            contentPanel.Location = new Point(220, menuStrip.Height);
+            contentPanel.Location = new Point(220, menuStrip.Height + 25);
             contentPanel.Size = new Size(contentWidth, contentHeight);
             contentPanel.BackColor = contentBg;
 
@@ -274,363 +290,6 @@ namespace wildcat_one_windows
             dashboardPanel.Controls.Add(welcomeGroupBox);
             dashboardPanel.Controls.Add(statsFlowPanel);
             dashboardPanel.Controls.Add(todayGroupBox);
-
-            // ===========================================
-            // Schedule Page Panel
-            // ===========================================
-            schedulePagePanel = new Panel();
-            schedulePagePanel.Location = new Point(0, 0);
-            schedulePagePanel.Size = new Size(contentWidth, contentHeight);
-            schedulePagePanel.BackColor = contentBg;
-            schedulePagePanel.Visible = false;
-
-            // --- Schedule Header Panel ---
-            scheduleHeaderPanel = new Panel();
-            scheduleHeaderPanel.Location = new Point(20, 12);
-            scheduleHeaderPanel.Size = new Size(840, 70);
-            scheduleHeaderPanel.BackColor = Color.White;
-
-            scheduleTitle = new Label();
-            scheduleTitle.Text = "My Class Schedule";
-            scheduleTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            scheduleTitle.ForeColor = Color.FromArgb(122, 26, 61);
-            scheduleTitle.Location = new Point(18, 8);
-            scheduleTitle.AutoSize = true;
-
-            semesterComboBox = new ComboBox();
-            semesterComboBox.Font = new Font("Segoe UI", 9.5F);
-            semesterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            semesterComboBox.Location = new Point(540, 12);
-            semesterComboBox.Size = new Size(280, 26);
-
-            semesterInfoLabel = new Label();
-            semesterInfoLabel.Text = "";
-            semesterInfoLabel.Font = new Font("Segoe UI", 9F);
-            semesterInfoLabel.ForeColor = Color.FromArgb(100, 100, 100);
-            semesterInfoLabel.Location = new Point(18, 44);
-            semesterInfoLabel.AutoSize = true;
-
-            scheduleHeaderPanel.Controls.Add(scheduleTitle);
-            scheduleHeaderPanel.Controls.Add(semesterComboBox);
-            scheduleHeaderPanel.Controls.Add(semesterInfoLabel);
-
-            // --- Schedule Grid Container (scrollable) ---
-            scheduleGridContainer = new Panel();
-            scheduleGridContainer.Location = new Point(20, 92);
-            scheduleGridContainer.Size = new Size(840, contentHeight - 112);
-            scheduleGridContainer.AutoScroll = true;
-            scheduleGridContainer.BackColor = Color.White;
-
-            // --- Schedule Grid Panel (custom painted, DoubleBuffered) ---
-            // 80px time labels + 7 * 108px day columns = 836px wide
-            // 36px header + 27 * 40px slots = 1116px tall
-            scheduleGridPanel = new DoubleBufferedPanel();
-            scheduleGridPanel.Location = new Point(0, 0);
-            scheduleGridPanel.Size = new Size(836, 1116);
-            scheduleGridPanel.BackColor = Color.White;
-
-            scheduleGridContainer.Controls.Add(scheduleGridPanel);
-
-            schedulePagePanel.Controls.Add(scheduleHeaderPanel);
-            schedulePagePanel.Controls.Add(scheduleGridContainer);
-
-            // ===========================================
-            // Grades Page Panel
-            // ===========================================
-            gradesPagePanel = new Panel();
-            gradesPagePanel.Location = new Point(0, 0);
-            gradesPagePanel.Size = new Size(contentWidth, contentHeight);
-            gradesPagePanel.BackColor = contentBg;
-            gradesPagePanel.Visible = false;
-
-            // --- Grades Header Panel ---
-            gradesHeaderPanel = new Panel();
-            gradesHeaderPanel.Location = new Point(20, 12);
-            gradesHeaderPanel.Size = new Size(840, 70);
-            gradesHeaderPanel.BackColor = Color.White;
-
-            gradesTitle = new Label();
-            gradesTitle.Text = "Academic Grades";
-            gradesTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            gradesTitle.ForeColor = Color.FromArgb(122, 26, 61);
-            gradesTitle.Location = new Point(18, 8);
-            gradesTitle.AutoSize = true;
-
-            gradesSemesterComboBox = new ComboBox();
-            gradesSemesterComboBox.Font = new Font("Segoe UI", 9.5F);
-            gradesSemesterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            gradesSemesterComboBox.Location = new Point(540, 12);
-            gradesSemesterComboBox.Size = new Size(280, 26);
-
-            gradesSemesterInfoLabel = new Label();
-            gradesSemesterInfoLabel.Text = "";
-            gradesSemesterInfoLabel.Font = new Font("Segoe UI", 9F);
-            gradesSemesterInfoLabel.ForeColor = Color.FromArgb(100, 100, 100);
-            gradesSemesterInfoLabel.Location = new Point(18, 44);
-            gradesSemesterInfoLabel.AutoSize = true;
-
-            gradesHeaderPanel.Controls.Add(gradesTitle);
-            gradesHeaderPanel.Controls.Add(gradesSemesterComboBox);
-            gradesHeaderPanel.Controls.Add(gradesSemesterInfoLabel);
-
-            // --- Grades Table Container (scrollable) ---
-            gradesTableContainer = new Panel();
-            gradesTableContainer.Location = new Point(20, 92);
-            gradesTableContainer.Size = new Size(840, contentHeight - 112);
-            gradesTableContainer.AutoScroll = true;
-            gradesTableContainer.BackColor = Color.White;
-
-            // --- Grades DataGridView ---
-            gradesDataGridView = new DataGridView();
-            gradesDataGridView.Dock = DockStyle.Fill;
-            gradesDataGridView.ReadOnly = true;
-            gradesDataGridView.AllowUserToAddRows = false;
-            gradesDataGridView.AllowUserToDeleteRows = false;
-            gradesDataGridView.AllowUserToResizeRows = false;
-            gradesDataGridView.RowHeadersVisible = false;
-            gradesDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            gradesDataGridView.MultiSelect = false;
-            gradesDataGridView.BorderStyle = BorderStyle.None;
-            gradesDataGridView.BackgroundColor = Color.White;
-            gradesDataGridView.GridColor = Color.FromArgb(230, 230, 230);
-            gradesDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            gradesDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-            gradesDataGridView.RowTemplate.Height = 50;
-            gradesDataGridView.Font = new Font("Segoe UI", 9F);
-
-            // Header styling
-            gradesDataGridView.EnableHeadersVisualStyles = false;
-            gradesDataGridView.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.FromArgb(248, 249, 250),
-                ForeColor = Color.FromArgb(122, 26, 61),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                Padding = new Padding(8, 0, 0, 0),
-                SelectionBackColor = Color.FromArgb(248, 249, 250),
-                SelectionForeColor = Color.FromArgb(122, 26, 61)
-            };
-            gradesDataGridView.ColumnHeadersHeight = 40;
-            gradesDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            gradesDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
-            // Row styling
-            gradesDataGridView.DefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.White,
-                ForeColor = Color.FromArgb(52, 73, 94),
-                SelectionBackColor = Color.FromArgb(240, 242, 245),
-                SelectionForeColor = Color.FromArgb(52, 73, 94),
-                Padding = new Padding(8, 0, 0, 0),
-                WrapMode = DataGridViewTriState.True
-            };
-            gradesDataGridView.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.FromArgb(250, 250, 252),
-                ForeColor = Color.FromArgb(52, 73, 94),
-                SelectionBackColor = Color.FromArgb(240, 242, 245),
-                SelectionForeColor = Color.FromArgb(52, 73, 94),
-                Padding = new Padding(8, 0, 0, 0),
-                WrapMode = DataGridViewTriState.True
-            };
-
-            // Columns
-            var colCourseCode = new DataGridViewTextBoxColumn
-            {
-                Name = "CourseCode",
-                HeaderText = "Course Code",
-                Width = 100
-            };
-            var colCourseTitle = new DataGridViewTextBoxColumn
-            {
-                Name = "CourseTitle",
-                HeaderText = "Course Title",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            };
-            var colUnits = new DataGridViewTextBoxColumn
-            {
-                Name = "Units",
-                HeaderText = "Units",
-                Width = 60,
-                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
-            };
-            var colMidterm = new DataGridViewTextBoxColumn
-            {
-                Name = "Midterm",
-                HeaderText = "Midterm",
-                Width = 80,
-                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
-            };
-            var colFinal = new DataGridViewTextBoxColumn
-            {
-                Name = "Final",
-                HeaderText = "Final",
-                Width = 80,
-                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
-            };
-            var colStatus = new DataGridViewTextBoxColumn
-            {
-                Name = "Status",
-                HeaderText = "Status",
-                Width = 100,
-                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
-            };
-
-            gradesDataGridView.Columns.AddRange(colCourseCode, colCourseTitle, colUnits, colMidterm, colFinal, colStatus);
-
-            gradesTableContainer.Controls.Add(gradesDataGridView);
-
-            // --- Grades empty state label (hidden by default) ---
-            gradesEmptyLabel = new Label();
-            gradesEmptyLabel.Text = "No grades available";
-            gradesEmptyLabel.Font = new Font("Segoe UI", 11F, FontStyle.Italic);
-            gradesEmptyLabel.ForeColor = Color.FromArgb(150, 150, 150);
-            gradesEmptyLabel.AutoSize = false;
-            gradesEmptyLabel.Size = new Size(840, 40);
-            gradesEmptyLabel.Location = new Point(20, 200);
-            gradesEmptyLabel.TextAlign = ContentAlignment.MiddleCenter;
-            gradesEmptyLabel.Visible = false;
-
-            gradesPagePanel.Controls.Add(gradesHeaderPanel);
-            gradesPagePanel.Controls.Add(gradesTableContainer);
-            gradesPagePanel.Controls.Add(gradesEmptyLabel);
-
-            // ===========================================
-            // Professors Page Panel
-            // ===========================================
-            professorsPagePanel = new Panel();
-            professorsPagePanel.Location = new Point(0, 0);
-            professorsPagePanel.Size = new Size(contentWidth, contentHeight);
-            professorsPagePanel.BackColor = contentBg;
-            professorsPagePanel.Visible = false;
-
-            // --- Professors Header Panel ---
-            profHeaderPanel = new Panel();
-            profHeaderPanel.Location = new Point(20, 12);
-            profHeaderPanel.Size = new Size(840, 70);
-            profHeaderPanel.BackColor = Color.White;
-
-            profTitle = new Label();
-            profTitle.Text = "My Professors";
-            profTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            profTitle.ForeColor = Color.FromArgb(122, 26, 61);
-            profTitle.Location = new Point(18, 8);
-            profTitle.AutoSize = true;
-
-            profSemesterComboBox = new ComboBox();
-            profSemesterComboBox.Font = new Font("Segoe UI", 9.5F);
-            profSemesterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            profSemesterComboBox.Location = new Point(540, 12);
-            profSemesterComboBox.Size = new Size(280, 26);
-
-            profSemesterInfoLabel = new Label();
-            profSemesterInfoLabel.Text = "";
-            profSemesterInfoLabel.Font = new Font("Segoe UI", 9F);
-            profSemesterInfoLabel.ForeColor = Color.FromArgb(100, 100, 100);
-            profSemesterInfoLabel.Location = new Point(18, 44);
-            profSemesterInfoLabel.AutoSize = true;
-
-            profHeaderPanel.Controls.Add(profTitle);
-            profHeaderPanel.Controls.Add(profSemesterComboBox);
-            profHeaderPanel.Controls.Add(profSemesterInfoLabel);
-
-            // --- Professors Table Container (scrollable) ---
-            profTableContainer = new Panel();
-            profTableContainer.Location = new Point(20, 92);
-            profTableContainer.Size = new Size(840, contentHeight - 112);
-            profTableContainer.AutoScroll = true;
-            profTableContainer.BackColor = Color.White;
-
-            // --- Professors DataGridView ---
-            profDataGridView = new DataGridView();
-            profDataGridView.Dock = DockStyle.Fill;
-            profDataGridView.ReadOnly = true;
-            profDataGridView.AllowUserToAddRows = false;
-            profDataGridView.AllowUserToDeleteRows = false;
-            profDataGridView.AllowUserToResizeRows = false;
-            profDataGridView.RowHeadersVisible = false;
-            profDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            profDataGridView.MultiSelect = false;
-            profDataGridView.BorderStyle = BorderStyle.None;
-            profDataGridView.BackgroundColor = Color.White;
-            profDataGridView.GridColor = Color.FromArgb(230, 230, 230);
-            profDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            profDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-            profDataGridView.RowTemplate.Height = 44;
-            profDataGridView.Font = new Font("Segoe UI", 9F);
-
-            // Header styling
-            profDataGridView.EnableHeadersVisualStyles = false;
-            profDataGridView.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.FromArgb(248, 249, 250),
-                ForeColor = Color.FromArgb(122, 26, 61),
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                Padding = new Padding(8, 0, 0, 0),
-                SelectionBackColor = Color.FromArgb(248, 249, 250),
-                SelectionForeColor = Color.FromArgb(122, 26, 61)
-            };
-            profDataGridView.ColumnHeadersHeight = 40;
-            profDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            profDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
-            // Row styling
-            profDataGridView.DefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.White,
-                ForeColor = Color.FromArgb(52, 73, 94),
-                SelectionBackColor = Color.FromArgb(240, 242, 245),
-                SelectionForeColor = Color.FromArgb(52, 73, 94),
-                Padding = new Padding(8, 0, 0, 0)
-            };
-            profDataGridView.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.FromArgb(250, 250, 252),
-                ForeColor = Color.FromArgb(52, 73, 94),
-                SelectionBackColor = Color.FromArgb(240, 242, 245),
-                SelectionForeColor = Color.FromArgb(52, 73, 94),
-                Padding = new Padding(8, 0, 0, 0)
-            };
-
-            // Columns
-            var profColCourseCode = new DataGridViewTextBoxColumn
-            {
-                Name = "ProfCourseCode",
-                HeaderText = "Course Code",
-                Width = 120
-            };
-            var profColCourseTitle = new DataGridViewTextBoxColumn
-            {
-                Name = "ProfCourseTitle",
-                HeaderText = "Course Title",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            };
-            var profColProfessor = new DataGridViewTextBoxColumn
-            {
-                Name = "ProfProfessor",
-                HeaderText = "Professor",
-                Width = 300
-            };
-
-            profDataGridView.Columns.AddRange(profColCourseCode, profColCourseTitle, profColProfessor);
-
-            profTableContainer.Controls.Add(profDataGridView);
-
-            // --- Professors empty state label (hidden by default) ---
-            profEmptyLabel = new Label();
-            profEmptyLabel.Text = "No professor data available";
-            profEmptyLabel.Font = new Font("Segoe UI", 11F, FontStyle.Italic);
-            profEmptyLabel.ForeColor = Color.FromArgb(150, 150, 150);
-            profEmptyLabel.AutoSize = false;
-            profEmptyLabel.Size = new Size(840, 40);
-            profEmptyLabel.Location = new Point(20, 200);
-            profEmptyLabel.TextAlign = ContentAlignment.MiddleCenter;
-            profEmptyLabel.Visible = false;
-
-            professorsPagePanel.Controls.Add(profHeaderPanel);
-            professorsPagePanel.Controls.Add(profTableContainer);
-            professorsPagePanel.Controls.Add(profEmptyLabel);
 
             // ===========================================
             // Change Password Page Panel
@@ -1152,9 +811,6 @@ namespace wildcat_one_windows
 
             // Add all page panels to content panel
             contentPanel.Controls.Add(dashboardPanel);
-            contentPanel.Controls.Add(schedulePagePanel);
-            contentPanel.Controls.Add(gradesPagePanel);
-            contentPanel.Controls.Add(professorsPagePanel);
             contentPanel.Controls.Add(changePasswordPagePanel);
             contentPanel.Controls.Add(courseOfferingsPagePanel);
 
@@ -1162,6 +818,7 @@ namespace wildcat_one_windows
             // Add all to form
             // ===========================================
             Controls.Add(menuStrip);
+            Controls.Add(toolStrip);
             Controls.Add(sidebarPanel);
             Controls.Add(contentPanel);
         }
@@ -1215,6 +872,9 @@ namespace wildcat_one_windows
         }
 
         #endregion
+
+        // ToolStrip
+        private ToolStrip toolStrip;
 
         // MenuStrip
         private MenuStrip menuStrip;
@@ -1271,34 +931,6 @@ namespace wildcat_one_windows
         private Panel todayClassesPanel;
         private Label noClassesLabel;
 
-        // Schedule page
-        private Panel schedulePagePanel;
-        private Panel scheduleHeaderPanel;
-        private Label scheduleTitle;
-        private ComboBox semesterComboBox;
-        private Label semesterInfoLabel;
-        private Panel scheduleGridContainer;
-        private DoubleBufferedPanel scheduleGridPanel;
-
-        // Grades page
-        private Panel gradesPagePanel;
-        private Panel gradesHeaderPanel;
-        private Label gradesTitle;
-        private ComboBox gradesSemesterComboBox;
-        private Label gradesSemesterInfoLabel;
-        private Panel gradesTableContainer;
-        private DataGridView gradesDataGridView;
-        private Label gradesEmptyLabel;
-
-        // Professors page
-        private Panel professorsPagePanel;
-        private Panel profHeaderPanel;
-        private Label profTitle;
-        private ComboBox profSemesterComboBox;
-        private Label profSemesterInfoLabel;
-        private Panel profTableContainer;
-        private DataGridView profDataGridView;
-        private Label profEmptyLabel;
 
         // Course Offerings page
         private Panel courseOfferingsPagePanel;
